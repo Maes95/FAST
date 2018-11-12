@@ -25,7 +25,7 @@ if __name__ == "__main__":
             if file[0] == ".":
                 pass
             elif (file == "fault_matrix_key_tc.pickle" or
-                file == "fault_matrix.pickle"):
+                file == "fault_matrix.pickle" or file == "times.txt"):
                 pass
             elif ("-bbox.txt" in file or
                   "-function.txt" in file or

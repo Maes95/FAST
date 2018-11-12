@@ -25,6 +25,8 @@ import competitors
 import fast
 import metric
 
+import priorTime
+
 
 usage = """USAGE: python py/prioritize.py <dataset> <entity> <algorithm> <repetitions>
 OPTIONS:
@@ -91,6 +93,37 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
                 else:
                     stime, ptime, prioritization = fast.fast_pw(
                         fin, r, b, bbox=True, k=k, memory=True)
+                writePrioritization(ppath, name, ctype, run, prioritization)
+                apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
+                apfds.append(apfd)
+                stimes.append(stime)
+                ptimes.append(ptime)
+                print("  Progress: 100%  ")
+                print "  Running time:", stime + ptime
+                if javaFlag:
+                    print "  APFD:", sum(apfds[run]) / len(apfds[run])
+                else:
+                    print "  APFD:", apfd
+            rep = (name, stimes, ptimes, apfds)
+            writeOutput(outpath, ctype, rep, javaFlag)
+            print("")
+        else:
+            print name, "already run."
+    
+    # NAIVE APROACH
+    elif name == "FAST-time":
+        if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
+            ptimes, stimes, apfds = [], [], []
+            for run in xrange(repeats):
+                print " Run", run
+                if javaFlag:
+                    stime, ptime, prioritization = fast.fast_pw(
+                        fin, r, b, bbox=True, k=k, memory=False)
+                else:
+                    stime, ptime, prioritization = fast.fast_pw(
+                        fin, r, b, bbox=True, k=k, memory=True)
+                extraPTime, prioritization = priorTime.priorByTime(prioritization, "input/{}_{}/".format(prog, v))
+                ptime = extraPTime + ptime
                 writePrioritization(ppath, name, ctype, run, prioritization)
                 apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
                 apfds.append(apfd)
@@ -389,9 +422,10 @@ if __name__ == "__main__":
     repeats = int(repeats)
     algnames = {"FAST-pw", "FAST-one", "FAST-log", "FAST-sqrt", "FAST-all",
                 "STR", "I-TSD",
-                "ART-D", "ART-F", "GT", "GA", "GA-S"}
+                "ART-D", "ART-F", "GT", "GA", "GA-S", "FAST-time"}
     prog_vs = {"flex_v3", "grep_v3", "gzip_v1", "make_v1", "sed_v6",
-               "closure_v0", "lang_v0", "math_v0", "chart_v0", "time_v0", "fullteaching_v0", "fullteachingint_v0","fullteachingall_v0"}
+               "closure_v0", "lang_v0", "math_v0", "chart_v0", "time_v0", 
+               "fullteaching_v0", "fullteachingint_v0","fullteachingall_v0", "fullteachingexperimente2e_v0"}
     entities = {"bbox", "function", "branch", "line"}
 
     if prog_v not in prog_vs:
