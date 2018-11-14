@@ -90,7 +90,6 @@ def getFaultDetected(fault_matrix):
     else:
         with open(fault_matrix, "rb") as picklefile:
             pickledict = load(picklefile)
-            print pickledict
         for key in pickledict.keys():
             faults_dict[int(key)] = pickledict[key]
 

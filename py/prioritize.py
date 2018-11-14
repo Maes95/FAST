@@ -110,20 +110,20 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
         else:
             print name, "already run."
     
-    # NAIVE APROACH
     elif name == "FAST-time":
         if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
             ptimes, stimes, apfds = [], [], []
             for run in xrange(repeats):
                 print " Run", run
                 if javaFlag:
-                    stime, ptime, prioritization = fast.fast_pw(
-                        fin, r, b, bbox=True, k=k, memory=False)
+                    stime, ptime, prioritization = fast.fast_time(
+                        fin, r, b,  "input/{}_{}/".format(prog, v), bbox=True, k=k, memory=False)
                 else:
-                    stime, ptime, prioritization = fast.fast_pw(
-                        fin, r, b, bbox=True, k=k, memory=True)
-                extraPTime, prioritization = priorTime.priorByTime(prioritization, "input/{}_{}/".format(prog, v))
-                ptime = extraPTime + ptime
+                    stime, ptime, prioritization = fast.fast_time(
+                        fin, r, b,  "input/{}_{}/".format(prog, v), bbox=True, k=k, memory=True)
+                # NAIVE APROACH (change fast_time to fast_pw)
+                #extraPTime, prioritization = priorTime.priorByTime(prioritization, "input/{}_{}/".format(prog, v))
+                #ptime = extraPTime + ptime
                 writePrioritization(ppath, name, ctype, run, prioritization)
                 apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
                 apfds.append(apfd)

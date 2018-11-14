@@ -93,4 +93,4 @@ if os.path.exists(DIRNAME):
     pprint.pprint(tcs_list)
     print fault_matrix 
 
-# python py/prioritize.py fullteachingexperimente2e_v0 bbox FAST-time 50
+# python py/prioritize.py fullteachingexperimente2e_v0 bbox FAST-pw 50
