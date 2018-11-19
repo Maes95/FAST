@@ -10,6 +10,7 @@ import re
 import cPickle as pickle
 import shutil
 from operator import attrgetter
+import json
 
 class ProcessManager:
 
@@ -64,6 +65,10 @@ class ExtractorManager:
             self.pm.call(self.project['build'])
             print "> Running test: %s" % folder
             self.pm.call(self.project['test'])
+    
+    def safeClose(self):
+        self.pm.close()
+        os.chdir(self.init_folder)
        
 
     def getTimesAndBBox(self):
@@ -74,23 +79,39 @@ class ExtractorManager:
         self.create_and_test(self.project['base_folder'], self.project['base'])
 
         reports = listdir(self.project['reports_path'])
-        #reports.sort()
+        reports.sort()
 
         for report in reports:
             if report.endswith('.xml'):
                 root = xml.etree.ElementTree.parse(join(self.project['reports_path'],report)).getroot()
                 suit_name = root.get('name')
-                # ADD TIME
-                self.times += root.get('time')+'\n'
-                # ADD BBOX
-                with open(join(self.project['test_path'], suit_name.replace('.','/')+".java"), "r+") as code_file:  
-                    self.bbox += code_file.read().replace("\n"," ").replace("\r"," ") +'\n'
-                # SAVE TO GET FAULT MATRIX
-                self.tcs[suit_name] = {
-                    'id': self.n,
-                    'name': suit_name
-                }
-                self.n = self.n+1
+
+                # FILTER
+                excluded = False
+                if 'exclude' in self.project:
+                    for ex in self.project['exclude']:
+                        m = re.search(ex, suit_name)
+                        if m is not None and m.group(0):
+                            excluded = True
+                if excluded: continue 
+                
+                try:
+                    # ADD BBOX
+                    with open(join(self.project['test_path'], suit_name.replace('.','/')+".java"), "r+") as code_file:  
+                        self.bbox += code_file.read().replace("\n"," ").replace("\r"," ") +'\n'
+                     # ADD TIME
+                    self.times += root.get('time')+'\n'
+                    # SAVE TO GET FAULT MATRIX
+                    self.tcs[suit_name] = {
+                        'id': self.n,
+                        'name': suit_name
+                    }
+                    self.n = self.n+1
+                except IOError as err:
+                    # Except when exist a class in another class, i.e. SpecializeModuleTest$SpecializeModuleSpecializationStateTest.java
+                    print "> Can't include %s TC" % suit_name
+                    continue
+
         os.chdir(self.init_folder)
     
     def getFaultMatrix(self):
@@ -107,36 +128,24 @@ class ExtractorManager:
                     else:
                         if not tc_id in self.fault_matrix[bug_id]: # MULTIPLES FAILS IN SAME CLASS
                             self.fault_matrix[bug_id].append(tc_id)
-
-        print(self.fault_matrix)
-
-            # folder = self.project['name'] + "_BUG" +n
-            # change_version_command = 'defects4j checkout -p %s -v %db -w %s' % (self.project['name'], n, self.project['name'])
-            # self.create_and_test(folder, change_version_command)
-            # if n == 3:
-            #     break
-            # os.chdir(self.init_folder)
-            # shutil.rmtree(self.project['name'])
+        self.safeClose()
 
     def save(self):
-        with open(join(self.folder_name, self.project['name']+"-bbox.txt"), "w+") as out:
+        with open( join(self.folder_name, self.project['name'].lower()+"-bbox.txt"), "w+") as out:
             out.write(self.bbox)
-        with open(join(self.folder_name,"times.txt"), "wb" ) as tm:
+        with open( join(self.folder_name,"times.txt"), "wb" ) as tm:
             tm.write(self.times)
+        with open( join(self.folder_name,"fault_matrix.pickle"), "wb" ) as fm:
+            pickle.dump( self.fault_matrix , fm )
 
 if __name__ == "__main__":
 
-    xxx = {
-        'name' : 'Chart',
-        'base': 'defects4j checkout -p Chart -v 1f -w ChartBase',
-        'base_folder': 'ChartBase',
-        'build': 'sed -i \'s/<formatter type=\"plain\" usefile=\"false\"\/>/<formatter type=\"xml\"\/>/g\' ant/build.xml',
-        'test'   : 'ant -f ant/build.xml test',
-        'reports_path': "build-tests-reports",
-        'test_path': "tests"
-    }
+    if len(sys.argv) != 2:
+        print("Use: python extractTimesDefect4J.py <config_file>")
+        exit()
+    config = json.load(open(sys.argv[1]))
 
-    em = ExtractorManager(xxx)
+    em = ExtractorManager(config)
     em.getTimesAndBBox()
     em.getFaultMatrix()
-    #em.save()
+    em.save()

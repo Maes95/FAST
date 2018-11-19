@@ -8,3 +8,4 @@ scalability/plots/*.html
 
 # IGNORE DEFECTS FOLDERS
 defects_folder/**/
+*.log

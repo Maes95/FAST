@@ -271,8 +271,6 @@ def fast_time(input_file, r, b, path, bbox=False, k=5, memory=False):
 
     iteration, total = 0, float(len(tcs_minhashes))
     while len(tcs_minhashes) > 0:
-        print("PRIORIZED: ")
-        print(prioritized_tcs)
         iteration += 1
         if iteration % 100 == 0:
             sys.stdout.write("  Progress: {}%\r".format(
@@ -297,16 +295,12 @@ def fast_time(input_file, r, b, path, bbox=False, k=5, memory=False):
             if len(candidates) == 0:
                 candidates = tcs_minhashes.keys()
 
-        print("CAND: ", candidates)
-
         # SELECT FASTER TC
 
         selected_tc = random.choice(tuple(candidates))
         for candidate in candidates:
             if times[candidate] < times[selected_tc]:
                 selected_tc = candidate
-        
-        print("SELECTED: ", selected_tc)
 
         # selected_tc, max_dist = random.choice(tuple(candidates)), -1
         # print("RAND CANDIDATE: %d"% selected_tc)
@@ -327,9 +321,6 @@ def fast_time(input_file, r, b, path, bbox=False, k=5, memory=False):
         del tcs_minhashes[selected_tc]
 
     ptime = time.clock() - ptime_start
-
-    print("PRIORIZED: ")
-    print(prioritized_tcs)
 
     return mh_time, ptime, prioritized_tcs[1:]
 

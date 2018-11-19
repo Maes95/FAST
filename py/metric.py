@@ -19,6 +19,7 @@ along with this source.  If not, see <http://www.gnu.org/licenses/>.
 from collections import defaultdict
 from pickle import load
 import os
+import priorTime
 
 
 def apfd(prioritization, fault_matrix, javaFlag):
@@ -57,7 +58,6 @@ def apfd(prioritization, fault_matrix, javaFlag):
         return apfds
 
     else:
-        print "ENTER"
         # dict: key=tcID, val=[detected faults]
         faults_dict = getFaultDetected(fault_matrix)
         detected_faults = set()
@@ -74,6 +74,29 @@ def apfd(prioritization, fault_matrix, javaFlag):
         apfd = 1.0 - (numerator / (n * m)) + (1.0 / (2 * n)) if m > 0 else 0.0
 
         return apfd
+
+def getUsedTime(prioritization, fault_matrix, times_path):
+    print(prioritization)
+    faults_dict = getFaultDetected(fault_matrix)
+    print(faults_dict)
+    usedTimes = []
+    priorDict = priorTime.getTimesMap(times_path)
+    print(priorDict)
+    for v in xrange(1, len(faults_dict)+1):
+        faulty_tcs = set(faults_dict[v])
+        position = 1
+        usedTime = 0
+        acum = 0
+        for tc_ID in prioritization:
+            acum += priorDict[tc_ID]
+            if tc_ID in faulty_tcs:
+                usedTime = acum
+                break
+            position += 1
+
+        usedTimes.append(usedTime)
+
+    return usedTimes
 
 
 def getFaultDetected(fault_matrix):
