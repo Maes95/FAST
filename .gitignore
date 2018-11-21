@@ -5,7 +5,10 @@ input/*/*.sig
 scalability/plots/*.html
 *_sigtime.txt
 *-bbox.sig
+output/**/
 
 # IGNORE DEFECTS FOLDERS
-defects_folder/**/
+defects_folder/*Base/
+defects_folder/_savedResults/
+defects_folder/*_v0/
 *.log

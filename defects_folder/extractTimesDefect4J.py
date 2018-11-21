@@ -48,6 +48,9 @@ class ExtractorManager:
         
         self.bbox = ""
         self.times= ""
+        self.times_avg= ""
+        self.cpu=""
+        self.mem=""
         self.fault_matrix = dict()
         self.tcs = dict()
         self.n=1
@@ -112,7 +115,7 @@ class ExtractorManager:
                     print "> Can't include %s TC" % suit_name
                     continue
 
-        os.chdir(self.init_folder)
+        #os.chdir(self.init_folder)
     
     def getFaultMatrix(self):
         for n in xrange(self.project['n_bugs']):
@@ -128,13 +131,38 @@ class ExtractorManager:
                     else:
                         if not tc_id in self.fault_matrix[bug_id]: # MULTIPLES FAILS IN SAME CLASS
                             self.fault_matrix[bug_id].append(tc_id)
-        self.safeClose()
+
+    def getMetrics(self):
+        print "> Running test for get metrics"
+        for tc in sorted(self.tcs.values(), key=lambda k: k['id']):
+            self.pm.call(self.project['one_test'] % tc['name'])
+            root = xml.etree.ElementTree.parse(self.project['metrics_path']).getroot()
+            m = re.search("AVG Mem: (.+)\nAVG CPU: (.+)\nAVG time: (.+)", root.find('system-out').text)
+            cpu = -1
+            mem = -1
+            time = -1
+            if m is not None and m.group(1) and m.group(2) and m.group(3):
+                mem = m.group(1)
+                cpu = m.group(2)
+                time = str( float(m.group(3)) / 1000 )
+            self.cpu += cpu + '\n'
+            self.mem += mem + '\n'
+            self.times_avg += time + '\n'
+            print "      \033[90m> %s \033[0m" % tc['name']
+            break
 
     def save(self):
+        self.safeClose()
         with open( join(self.folder_name, self.project['name'].lower()+"-bbox.txt"), "w+") as out:
             out.write(self.bbox)
         with open( join(self.folder_name,"times.txt"), "wb" ) as tm:
             tm.write(self.times)
+        with open( join(self.folder_name,"times_avg.txt"), "wb" ) as tma:
+            tma.write(self.times_avg)
+        with open( join(self.folder_name,"cpu.txt"), "wb" ) as cpu:
+            cpu.write(self.cpu)
+        with open( join(self.folder_name,"mem.txt"), "wb" ) as mem:
+            mem.write(self.mem)
         with open( join(self.folder_name,"fault_matrix.pickle"), "wb" ) as fm:
             pickle.dump( self.fault_matrix , fm )
 
@@ -148,4 +176,5 @@ if __name__ == "__main__":
     em = ExtractorManager(config)
     em.getTimesAndBBox()
     em.getFaultMatrix()
+    em.getMetrics()
     em.save()

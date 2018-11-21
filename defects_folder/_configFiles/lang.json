@@ -1,0 +1,9 @@
+{
+    "name" : "Lang",
+    "base": "defects4j checkout -p Lang -v 1f -w LangBase",
+    "base_folder": "LangBase",
+    "build": "",
+    "test"   : "mvn test",
+    "reports_path": "target/surefire-reports",
+    "test_path": "src/test/java"
+}

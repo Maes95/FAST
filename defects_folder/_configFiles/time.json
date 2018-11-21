@@ -1,0 +1,12 @@
+{
+    "name" : "Time",
+    "base": "defects4j checkout -p Time -v 1f -w TimeBase",
+    "base_folder": "TimeBase",
+    "build": "sed -i 's/TestAllPackages.java/Test*.java/g' pom.xml",
+    "test"   : "mvn test",
+    "reports_path": "target/surefire-reports",
+    "test_path": "src/test/java",
+    "exclude": [
+        "TestAll.*"
+    ]
+}

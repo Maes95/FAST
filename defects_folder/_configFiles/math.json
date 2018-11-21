@@ -1,0 +1,9 @@
+{
+    "name" : "Math",
+    "base": "defects4j checkout -p Math -v 1f -w MathBase",
+    "base_folder": "MathBase",
+    "build": "",
+    "test"   : "mvn test",
+    "reports_path": "target/surefire-reports",
+    "test_path": "src/test/java"
+}
