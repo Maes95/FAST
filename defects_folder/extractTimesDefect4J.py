@@ -136,8 +136,17 @@ class ExtractorManager:
         print "> Running test for get metrics"
         for tc in sorted(self.tcs.values(), key=lambda k: k['id']):
             self.pm.call(self.project['one_test'] % tc['name'])
-            root = xml.etree.ElementTree.parse(self.project['metrics_path']).getroot()
-            m = re.search("AVG Mem: (.+)\nAVG CPU: (.+)\nAVG time: (.+)", root.find('system-out').text)
+
+            text = ""
+
+            if self.project['metrics_path'].endswith(".xml"):
+                root = xml.etree.ElementTree.parse(self.project['metrics_path']).getroot()
+                text = root.find('system-out').text
+            else:
+                with open(self.project['metrics_path'], "r") as f:
+                    text = f.read()
+
+            m = re.search("AVG Mem: (.+)\nAVG CPU: (.+)\nAVG time: (.+)", text)
             cpu = -1
             mem = -1
             time = -1
@@ -149,7 +158,6 @@ class ExtractorManager:
             self.mem += mem + '\n'
             self.times_avg += time + '\n'
             print "      \033[90m> %s \033[0m" % tc['name']
-            break
 
     def save(self):
         self.safeClose()

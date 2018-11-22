@@ -4,8 +4,11 @@
     "base_folder": "ClosureBase",
     "build": "cd .. && ./_configFiles/closureFiles/build.sh",
     "test" : "ant test",
-    "one_test": "ant -Dtest.class=\"GetMetrics\" -Dto.test=\"%s\" test",
+    "one_test": "ant -Dtest.class=GetMetrics -Dto.test=%s test",
     "reports_path": "build/testoutput",
     "metrics_path": "build/testoutput/TEST-com.google.GetMetrics.xml",
-    "test_path": "test"
+    "test_path": "test",
+    "exclude": [
+        ".*GetMetrics.*"
+    ]
 }
