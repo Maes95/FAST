@@ -76,25 +76,47 @@ def apfd(prioritization, fault_matrix, javaFlag):
         return apfd
 
 def getUsedTime(prioritization, fault_matrix, times_path):
-    print(prioritization)
     faults_dict = getFaultDetected(fault_matrix)
-    print(faults_dict)
     usedTimes = []
-    priorDict = priorTime.getTimesMap(times_path)
-    print(priorDict)
+    timesMap = priorTime.getTimesMap(times_path)
     for v in xrange(1, len(faults_dict)+1):
         faulty_tcs = set(faults_dict[v])
         position = 1
         usedTime = 0
         acum = 0
         for tc_ID in prioritization:
-            acum += priorDict[tc_ID]
+            acum += timesMap[tc_ID]
             if tc_ID in faulty_tcs:
                 usedTime = acum
                 break
             position += 1
 
         usedTimes.append(usedTime)
+
+    return usedTimes
+
+def getUsedTimeParallel(batches, fault_matrix, times_path):
+    faults_dict = getFaultDetected(fault_matrix)
+    usedTimes = []
+    timesMap = priorTime.getTimesMap(times_path)
+    for v in xrange(1, len(faults_dict)+1):
+        faulty_tcs = set(faults_dict[v])
+        acum = 0
+
+        for batch in batches:
+            min_time = None
+            max_batch=0
+            for tc_ID in batch:
+                if timesMap[tc_ID] > max_batch:
+                    max_batch = timesMap[tc_ID]
+                if tc_ID in faulty_tcs:
+                    if min_time is None or timesMap[tc_ID] < min_time:
+                        min_time = timesMap[tc_ID]
+            if min_time is not None:
+                usedTimes.append(acum+min_time)
+                break
+            else:
+                acum += max_batch
 
     return usedTimes
 

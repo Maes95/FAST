@@ -20,8 +20,8 @@ import java.util.List;
  */
 public class GetMetrics extends TestCase {
 
-    private static final int ITERATIONS = 100;
-    private static final int DISCARDED = 20;
+    private static final int ITERATIONS = 10;
+    private static final int DISCARDED = 2;
     private static final int SLEEP_TIME = 10;
 
     // FOR EACH TEST
@@ -58,6 +58,7 @@ public class GetMetrics extends TestCase {
                     Long time_ = new Long(System.currentTimeMillis()-this.time);
                     allTestTimes.add(time_);
                     th.interrupt();
+                    th.join();
                     allTestMemory.add(new Long(calculateAVGLong(testMemory)));
                     Double cpu = new Double(calculateAVGDouble(testCpu));
                     allTestCpu.add(Double.isNaN(cpu.doubleValue()) ? new Double(0.0): cpu);

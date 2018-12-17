@@ -26,6 +26,7 @@ import fast
 import metric
 
 import priorTime
+import pprint
 
 
 usage = """USAGE: python py/prioritize.py <dataset> <entity> <algorithm> <repetitions>
@@ -131,6 +132,37 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
                 writePrioritization(ppath, name, ctype, run, prioritization)
                 apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
                 realDetectionTime = metric.getUsedTime(prioritization, fault_matrix, "input/{}_{}/".format(prog, v))
+                apfds.append(apfd)
+                stimes.append(stime)
+                ptimes.append(ptime)
+                print("  Progress: 100%  ")
+                print "  Running time:", stime + ptime
+                if javaFlag:
+                    print "  APFD:", sum(apfds[run]) / len(apfds[run])
+                else:
+                    print "  APFD:", apfd
+            rep = (name, stimes, ptimes, apfds, realDetectionTime)
+            #writeOutput(outpath, ctype, rep, javaFlag)
+            writeOutputWithTestTime(outpath, ctype, rep, javaFlag)
+            print("")
+        else:
+            print name, "already run."
+    
+    elif name == "FAST-mem":
+        if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
+            ptimes, stimes, apfds, realDetectionTime = [], [], [], []
+            for run in xrange(repeats):
+                print " Run", run
+                if javaFlag:
+                    stime, ptime, prioritization = fast.fast_time(
+                        fin, r, b,  "input/{}_{}/".format(prog, v), bbox=True, k=k, memory=False)
+                else:
+                    stime, ptime, prioritization = fast.fast_time(
+                        fin, r, b,  "input/{}_{}/".format(prog, v), bbox=True, k=k, memory=True)
+                writePrioritization(ppath, name, ctype, run, prioritization)
+                batches = priorTime.getBatchesByMem(prioritization, 1000000, "input/{}_{}/".format(prog, v))
+                apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
+                realDetectionTime = metric.getUsedTimeParallel(batches, fault_matrix, "input/{}_{}/".format(prog, v))
                 apfds.append(apfd)
                 stimes.append(stime)
                 ptimes.append(ptime)
@@ -394,6 +426,9 @@ def writePrioritization(path, name, ctype, run, prioritization):
     fout = "{}/{}-{}-{}.pickle".format(path, name, ctype, run+1)
     pickle.dump(prioritization, open(fout, "wb"))
 
+def writeContextAwarePrioritization(path, name, ctype, run, context_aware_matrix):
+    pprint.pprint(context_aware_matrix)
+
 
 def writeOutput(outpath, ctype, res, javaFlag):
     if javaFlag:
@@ -447,7 +482,7 @@ if __name__ == "__main__":
     repeats = int(repeats)
     algnames = {"FAST-pw", "FAST-one", "FAST-log", "FAST-sqrt", "FAST-all",
                 "STR", "I-TSD",
-                "ART-D", "ART-F", "GT", "GA", "GA-S", "FAST-time"}
+                "ART-D", "ART-F", "GT", "GA", "GA-S", "FAST-time", "FAST-mem"}
     prog_vs = {"flex_v3", "grep_v3", "gzip_v1", "make_v1", "sed_v6",
                "closure_v0", "lang_v0", "math_v0", "chart_v0", "time_v0", 
                "fullteaching_v0", "fullteachingint_v0","fullteachingall_v0", "fullteachingexperimente2e_v0"}

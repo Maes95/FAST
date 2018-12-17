@@ -135,6 +135,7 @@ class ExtractorManager:
     def getMetrics(self):
         print "> Running test for get metrics"
         for tc in sorted(self.tcs.values(), key=lambda k: k['id']):
+            self.pm.call("pkill java")
             self.pm.call(self.project['one_test'] % tc['name'])
 
             text = ""

@@ -18,6 +18,51 @@ def getTimesMap(path):
             n=n+1
         return times
 
+def getCPUMap(path):
+    with open(path+"cpu.txt") as tfile:
+        cpu = dict()
+        n=1
+        for line in tfile.readlines():
+            cpu[n] = float(line) 
+            n=n+1
+        return cpu
+
+def getMemoryMap(path):
+    with open(path+"mem.txt") as tfile:
+        mem = dict()
+        n=1
+        for line in tfile.readlines():
+            mem[n] = float(line) 
+            n=n+1
+        return mem
+
+def getBatchesByMem(prioritization, available_mem, mem_path):
+    
+    memMap = getMemoryMap(mem_path)
+
+    batches = []
+    current_batch = []
+    current_memory = 0
+    # excluded_test = []
+
+    for tc in prioritization:
+
+        # if memMap[tc] > available_mem:
+        #     excluded_test.append((tc,memMap[tc]))
+        #     continue
+
+        new_batch_memory = current_memory + memMap[tc]
+
+        if new_batch_memory > available_mem:
+            batches.append(current_batch)
+            current_batch = []
+            new_batch_memory = memMap[tc]
+        
+        current_batch.append(tc)
+        current_memory = new_batch_memory
+    
+    return batches
+
 def priorByTime(prioritization, path, box_size=3):
 
     start = libtime.clock()
