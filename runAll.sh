@@ -2,7 +2,7 @@
 #algorithms=('FAST-one' 'FAST-pw' 'FAST-time')
 
 projects=('chart_v0' 'closure_v0'  'lang_v0' )
-algorithms=('FAST-one' 'FAST-pw' 'FAST-time' 'FAST-mem')
+algorithms=('FAST-one' 'FAST-pw' 'FAST-time' 'FAST-time-mem')
 
 it=100
 

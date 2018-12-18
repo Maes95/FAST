@@ -1,4 +1,4 @@
-package com.google;
+package org.joda.time;
 
 import junit.extensions.TestSetup;
 import junit.framework.Test;
@@ -14,14 +14,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * A collection of tests for the <code>org.jfree.chart.annotations</code>
- * package.  These tests can be run using JUnit (http://www.junit.org).
- */
 public class GetMetrics extends TestCase {
 
     private static final int ITERATIONS = 100;
-    private static final int DISCARDED = 2;
+    private static final int DISCARDED = 20;
     private static final int SLEEP_TIME = 10;
 
     // FOR EACH TEST
@@ -41,10 +37,10 @@ public class GetMetrics extends TestCase {
      * @return The test suite.
      */
     public static Test suite() throws ClassNotFoundException{
-        // ant -Dtest.class="GetMetrics" -Dto.test="com.google.debugging.sourcemap.Base64Test" test
+        // ant -f ant/build.xml -DtestClass="org.jfree.chart.annotations.junit.CategoryLineAnnotationTests" test-only
         TestSuite ts = new TestSuite();
         for(int i = 0; i < ITERATIONS; i++){
-            TestSetup t = new TestSetup(new TestSuite(Class.forName(System.getProperty("to.test")))) {
+            TestSetup t = new TestSetup(new TestSuite(Class.forName(System.getProperty("testClass")))) {
                 Thread th;
                 long time;
 
@@ -58,7 +54,6 @@ public class GetMetrics extends TestCase {
                     Long time_ = new Long(System.currentTimeMillis()-this.time);
                     allTestTimes.add(time_);
                     th.interrupt();
-                    th.join();
                     allTestMemory.add(new Long(calculateAVGLong(testMemory)));
                     Double cpu = new Double(calculateAVGDouble(testCpu));
                     allTestCpu.add(Double.isNaN(cpu.doubleValue()) ? new Double(0.0): cpu);

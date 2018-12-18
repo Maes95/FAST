@@ -148,7 +148,7 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
         else:
             print name, "already run."
     
-    elif name == "FAST-mem":
+    elif name == "FAST-time-mem":
         if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
             ptimes, stimes, apfds, realDetectionTime = [], [], [], []
             for run in xrange(repeats):
@@ -482,7 +482,7 @@ if __name__ == "__main__":
     repeats = int(repeats)
     algnames = {"FAST-pw", "FAST-one", "FAST-log", "FAST-sqrt", "FAST-all",
                 "STR", "I-TSD",
-                "ART-D", "ART-F", "GT", "GA", "GA-S", "FAST-time", "FAST-mem"}
+                "ART-D", "ART-F", "GT", "GA", "GA-S", "FAST-time", "FAST-time-mem"}
     prog_vs = {"flex_v3", "grep_v3", "gzip_v1", "make_v1", "sed_v6",
                "closure_v0", "lang_v0", "math_v0", "chart_v0", "time_v0", 
                "fullteaching_v0", "fullteachingint_v0","fullteachingall_v0", "fullteachingexperimente2e_v0"}

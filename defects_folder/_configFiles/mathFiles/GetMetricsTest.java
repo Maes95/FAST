@@ -1,9 +1,10 @@
-package com.google;
+package org.apache.commons;
 
-import junit.extensions.TestSetup;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.*;
+import org.junit.runner.JUnitCore;
+import org.junit.runner.Result;
+import repeat.Repeat;
+import repeat.RepeatRule;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryUsage;
@@ -14,15 +15,14 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * A collection of tests for the <code>org.jfree.chart.annotations</code>
- * package.  These tests can be run using JUnit (http://www.junit.org).
- */
-public class GetMetrics extends TestCase {
+public class GetMetricsTest{
 
     private static final int ITERATIONS = 100;
-    private static final int DISCARDED = 2;
+    private static final int DISCARDED = 20;
     private static final int SLEEP_TIME = 10;
+
+    @Rule
+    public RepeatRule rule = new RepeatRule();
 
     // FOR EACH TEST
     private static List testMemory;
@@ -33,51 +33,44 @@ public class GetMetrics extends TestCase {
     private static List allTestCpu = new LinkedList();
     private static List allTestTimes = new LinkedList();
 
+    private Thread th;
+    private long time;
+
+    @Before
+    public void setUp(){
+        testMemory = new ArrayList();
+        testCpu = new ArrayList();
+        th = startMetricThread();
+        this.time = System.currentTimeMillis();
+    }
+
+    @After
+    public void tearDown(){
+        Long time_ = new Long(System.currentTimeMillis()-this.time);
+        allTestTimes.add(time_);
+        th.interrupt();
+        allTestMemory.add(new Long(calculateAVGLong(testMemory)));
+        Double cpu = new Double(calculateAVGDouble(testCpu));
+        allTestCpu.add(Double.isNaN(cpu.doubleValue()) ? new Double(0.0): cpu);
+    }
+
+    @AfterClass
+    public static void finishAndSave(){
+        long mem = calculateAVGLong(allTestMemory.subList(DISCARDED, allTestMemory.size()));
+        double cpu = calculateAVGDouble(allTestCpu.subList(DISCARDED, allTestCpu.size()));
+        long time = calculateAVGLong(allTestTimes.subList(DISCARDED, allTestTimes.size()));
+        System.out.println("AVG Mem: "+mem);
+        System.out.println("AVG CPU: "+cpu);
+        System.out.println("AVG time: "+time);
+    }
 
 
-    /**
-     * Returns a test suite to the JUnit test runner.
-     *
-     * @return The test suite.
-     */
-    public static Test suite() throws ClassNotFoundException{
-        // ant -Dtest.class="GetMetrics" -Dto.test="com.google.debugging.sourcemap.Base64Test" test
-        TestSuite ts = new TestSuite();
-        for(int i = 0; i < ITERATIONS; i++){
-            TestSetup t = new TestSetup(new TestSuite(Class.forName(System.getProperty("to.test")))) {
-                Thread th;
-                long time;
-
-                protected void setUp() throws Exception {
-                    testMemory = new ArrayList();
-                    testCpu = new ArrayList();
-                    th = startMetricThread();
-                    this.time = System.currentTimeMillis();
-                }
-                protected void tearDown() throws Exception {
-                    Long time_ = new Long(System.currentTimeMillis()-this.time);
-                    allTestTimes.add(time_);
-                    th.interrupt();
-                    th.join();
-                    allTestMemory.add(new Long(calculateAVGLong(testMemory)));
-                    Double cpu = new Double(calculateAVGDouble(testCpu));
-                    allTestCpu.add(Double.isNaN(cpu.doubleValue()) ? new Double(0.0): cpu);
-                }
-            };
-            ts.addTest(t);
-
-        }
-
-        return new TestSetup(ts){
-            protected void tearDown(){
-                long mem = calculateAVGLong(allTestMemory.subList(DISCARDED, allTestMemory.size()));
-                double cpu = calculateAVGDouble(allTestCpu.subList(DISCARDED, allTestCpu.size()));
-                long time = calculateAVGLong(allTestTimes.subList(DISCARDED, allTestTimes.size()));
-                System.out.println("AVG Mem: "+mem);
-                System.out.println("AVG CPU: "+cpu);
-                System.out.println("AVG time: "+time);
-            }
-        };
+    @Test
+    @Repeat(times = ITERATIONS)
+    public void test() throws ClassNotFoundException{
+        // mvn -Dtest=GetMetricsTest -DtoTest=org.apache.commons.lang3.AnnotationUtilsTest test
+        JUnitCore junit = new JUnitCore();
+        Result result = junit.run(Class.forName(System.getProperty("toTest")));
     }
 
     public static Thread startMetricThread(){
@@ -149,15 +142,6 @@ public class GetMetrics extends TestCase {
         }
 
         return avg/list.size();
-    }
-
-    /**
-     * Constructs the test suite.
-     *
-     * @param name  the suite name.
-     */
-    public GetMetrics(String name) {
-        super(name);
     }
 
 }
