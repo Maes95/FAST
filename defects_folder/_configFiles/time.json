@@ -9,6 +9,7 @@
     "metrics_path": "target/surefire-reports/org.joda.time.GetMetrics-output.txt",
     "test_path": "src/test/java",
     "exclude": [
-        "TestAll.*"
+        "TestAll.*",
+        ".*GetMetrics.*"
     ]
 }

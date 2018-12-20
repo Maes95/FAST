@@ -305,7 +305,6 @@
               <testClass>${testClass}</testClass>
             </systemPropertyVariables>
           <includes>
-            <include>**/GetMetrics.java</include>
             <include>**/Test*.java</include>
           </includes>
           <excludes>

@@ -380,6 +380,7 @@
               </includes>
               <excludes>
                 <exclude>**/*AbstractTest.java</exclude>
+                <exclude>**/GetMetricsTest.java</exclude>
               </excludes>
           </configuration>
         </plugin>

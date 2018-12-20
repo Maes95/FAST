@@ -17,8 +17,8 @@ import java.util.List;
 
 public class GetMetricsTest{
 
-    private static final int ITERATIONS = 100;
-    private static final int DISCARDED = 20;
+    private static final int ITERATIONS = 10;
+    private static final int DISCARDED = 2;
     private static final int SLEEP_TIME = 10;
 
     @Rule

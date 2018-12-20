@@ -74,8 +74,7 @@ class ExtractorManager:
         os.chdir(self.init_folder)
        
 
-    def getTimesAndBBox(self):
-        # GET TIMES AND BBOX
+    def runTestForMapClasses(self):
 
         print "\033[95mProject: %s \033[0m" % self.project['name']
 
@@ -122,8 +121,8 @@ class ExtractorManager:
             bug_id = n+1 # FIRST BUG 1, NOT 0
             tc_classes = self.pm.runAndGetOutput("defects4j info -p %s -b %d | grep -oP \" \- \K(.+)::\" | cut -d\":\" -f1" % (self.project['name'], bug_id) )
 
-            for tc_class in tc_classes.split('\n'):
-                tc_class = tc_class.strip()
+            for tc_class in [ x for x in tc_classes.split('\n') if len(x) > 1]:
+                tc_class = self.fix(tc_class.strip())
                 if tc_class in self.tcs.keys():
                     tc_id = self.tcs[tc_class]['id']
                     if not bug_id in self.fault_matrix:
@@ -131,6 +130,8 @@ class ExtractorManager:
                     else:
                         if not tc_id in self.fault_matrix[bug_id]: # MULTIPLES FAILS IN SAME CLASS
                             self.fault_matrix[bug_id].append(tc_id)
+                else:
+                    print("Can't found class %s for bug %d"%(tc_class, bug_id))
 
     def getMetrics(self):
         print "> Running test for get metrics"
@@ -159,6 +160,12 @@ class ExtractorManager:
             self.mem += mem + '\n'
             self.times_avg += time + '\n'
             print "      \033[90m> %s \033[0m" % tc['name']
+    
+    def fix(self, tc_class):
+        if(self.project['name'] == "Math"):
+            return tc_class.replace("math.","math3.")
+        else:
+            return tc_class
 
     def save(self):
         self.safeClose()
@@ -183,7 +190,7 @@ if __name__ == "__main__":
     config = json.load(open(sys.argv[1]))
 
     em = ExtractorManager(config)
-    em.getTimesAndBBox()
+    em.runTestForMapClasses()
     em.getFaultMatrix()
     em.getMetrics()
     em.save()

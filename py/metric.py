@@ -40,7 +40,7 @@ def apfd(prioritization, fault_matrix, javaFlag):
         # key=version, val=[faulty_tcs]
         faults_dict = getFaultDetected(fault_matrix)
         apfds = []
-        for v in xrange(1, len(faults_dict)+1):
+        for v in faults_dict.keys():
             faulty_tcs = set(faults_dict[v])
             numerator = 0.0  # numerator of APFD
             position = 1
@@ -99,10 +99,10 @@ def getUsedTimeParallel(batches, fault_matrix, times_path):
     faults_dict = getFaultDetected(fault_matrix)
     usedTimes = []
     timesMap = priorTime.getTimesMap(times_path)
-    for v in xrange(1, len(faults_dict)+1):
+    for v in faults_dict.keys():
         faulty_tcs = set(faults_dict[v])
         acum = 0
-
+        
         for batch in batches:
             min_time = None
             max_batch=0

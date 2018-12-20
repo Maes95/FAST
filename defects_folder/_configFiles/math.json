@@ -9,6 +9,17 @@
     "metrics_path": "target/surefire-reports/org.apache.commons.GetMetricsTest-output.txt",
     "test_path": "src/test/java",
     "exclude": [
+        ".*DiscreteRealDistributionTest.*",
+        ".*MultiStartUnivariateRealOptimizerTest.*",
+        ".*EigenDecompositionImplTest.*",
+        ".*MultiDirectionalTest.*",
+        ".*MultiDirectionalTest.*",
+        ".*CholeskyDecompositionImplTest.*",
+        ".*BigMatrixImplTest.*",
+        ".*RealMatrixImplTest.*",
+        ".*GaussNewtonEstimatorTest.*",
+        ".*ChiSquareFactoryTest.*",
+        ".*ChiSquareFactoryTest.*",
         "GetMetricsTest"
     ]
 }

@@ -10,7 +10,7 @@ def splitArr(arr, size):
     return arrs
 
 def getTimesMap(path):
-    with open(path+"times.txt") as tfile:
+    with open(path+"times_avg.txt") as tfile:
         times = dict()
         n=1
         for line in tfile.readlines():
@@ -60,6 +60,11 @@ def getBatchesByMem(prioritization, available_mem, mem_path):
         
         current_batch.append(tc)
         current_memory = new_batch_memory
+
+    
+    # Save last batch if not was saved
+    if current_batch not in batches:
+        batches.append(current_batch)
     
     return batches
 
