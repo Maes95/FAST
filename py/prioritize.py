@@ -160,7 +160,7 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
                     stime, ptime, prioritization = fast.fast_time(
                         fin, r, b,  "input/{}_{}/".format(prog, v), bbox=True, k=k, memory=True)
                 writePrioritization(ppath, name, ctype, run, prioritization)
-                batches = priorTime.getBatchesByMem(prioritization, 1000000, "input/{}_{}/".format(prog, v))
+                batches = priorTime.getBatchesByMem(prioritization, 100000, "input/{}_{}/".format(prog, v))
                 apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
                 realDetectionTime = metric.getUsedTimeParallel(batches, fault_matrix, "input/{}_{}/".format(prog, v))
                 apfds.append(apfd)

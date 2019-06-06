@@ -14,3 +14,5 @@ do
         python py/prioritize.py $proj bbox $alg $it
     done
 done
+
+# python py/prioritize.py fullteachingexperimente2e_v0 bbox FAST-time 1 
