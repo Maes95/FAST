@@ -55,9 +55,11 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
     outpath = "output/{}_{}/".format(prog, v)
     ppath = outpath + "prioritized/"
 
+    timesMap = priorTime.getTimesMap("input/{}_{}/".format(prog, v))
+
     if name == "FAST-" + selsize.__name__[:-1]:
         if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
-            ptimes, stimes, apfds, realDetectionTime = [], [], [], []
+            ptimes, stimes, apfds, realDetectionTime, apfds_c = [], [], [], [], []
             for run in xrange(repeats):
                 print " Run", run
                 if javaFlag:
@@ -68,8 +70,10 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
                         fin, selsize, r=r, b=b, bbox=True, k=k, memory=True)
                 writePrioritization(ppath, name, ctype, run, prioritization)
                 apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
+                apfd_c = metric.apfd_c(prioritization, fault_matrix, timesMap)
                 realDetectionTime = metric.getUsedTime(prioritization, fault_matrix, "input/{}_{}/".format(prog, v))
                 apfds.append(apfd)
+                apfds_c.append(apfd_c)
                 stimes.append(stime)
                 ptimes.append(ptime)
                 print("  Progress: 100%  ")
@@ -78,7 +82,7 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
                     print "  APFD:", sum(apfds[run]) / len(apfds[run])
                 else:
                     print "  APFD:", apfd
-            rep = (name, stimes, ptimes, apfds, realDetectionTime)
+            rep = (name, stimes, ptimes, apfds, apfds_c, realDetectionTime)
             #writeOutput(outpath, ctype, rep, javaFlag)
             writeOutputWithTestTime(outpath, ctype, rep, javaFlag)
             print("")
@@ -87,7 +91,7 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
 
     elif name == "FAST-pw":
         if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
-            ptimes, stimes, apfds, realDetectionTime = [], [], [], []
+            ptimes, stimes, apfds, realDetectionTime, apfds_c = [], [], [], [], []
             for run in xrange(repeats):
                 print " Run", run
                 if javaFlag:
@@ -98,8 +102,10 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
                         fin, r, b, bbox=True, k=k, memory=True)
                 writePrioritization(ppath, name, ctype, run, prioritization)
                 apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
+                apfd_c = metric.apfd_c(prioritization, fault_matrix, timesMap)
                 realDetectionTime = metric.getUsedTime(prioritization, fault_matrix, "input/{}_{}/".format(prog, v))
                 apfds.append(apfd)
+                apfds_c.append(apfd_c)
                 stimes.append(stime)
                 ptimes.append(ptime)
                 print("  Progress: 100%  ")
@@ -108,7 +114,7 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
                     print "  APFD:", sum(apfds[run]) / len(apfds[run])
                 else:
                     print "  APFD:", apfd
-            rep = (name, stimes, ptimes, apfds, realDetectionTime)
+            rep = (name, stimes, ptimes, apfds, apfds_c, realDetectionTime)
             #writeOutput(outpath, ctype, rep, javaFlag)
             writeOutputWithTestTime(outpath, ctype, rep, javaFlag)
             print("")
@@ -117,7 +123,7 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
     
     elif name == "FAST-time":
         if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
-            ptimes, stimes, apfds, realDetectionTime = [], [], [], []
+            ptimes, stimes, apfds, realDetectionTime, apfds_c = [], [], [], [], []
             for run in xrange(repeats):
                 print " Run", run
                 if javaFlag:
@@ -131,8 +137,10 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
                 #ptime = extraPTime + ptime
                 writePrioritization(ppath, name, ctype, run, prioritization)
                 apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
+                apfd_c = metric.apfd_c(prioritization, fault_matrix, timesMap)
                 realDetectionTime = metric.getUsedTime(prioritization, fault_matrix, "input/{}_{}/".format(prog, v))
                 apfds.append(apfd)
+                apfds_c.append(apfd_c)
                 stimes.append(stime)
                 ptimes.append(ptime)
                 print("  Progress: 100%  ")
@@ -141,7 +149,7 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
                     print "  APFD:", sum(apfds[run]) / len(apfds[run])
                 else:
                     print "  APFD:", apfd
-            rep = (name, stimes, ptimes, apfds, realDetectionTime)
+            rep = (name, stimes, ptimes, apfds, apfds_c, realDetectionTime)
             #writeOutput(outpath, ctype, rep, javaFlag)
             writeOutputWithTestTime(outpath, ctype, rep, javaFlag)
             print("")
@@ -150,7 +158,7 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
     
     elif name == "FAST-time-mem":
         if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
-            ptimes, stimes, apfds, realDetectionTime = [], [], [], []
+            ptimes, stimes, apfds, realDetectionTime, apfds_c = [], [], [], [], []
             for run in xrange(repeats):
                 print " Run", run
                 if javaFlag:
@@ -162,8 +170,10 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
                 writePrioritization(ppath, name, ctype, run, prioritization)
                 batches = priorTime.getBatchesByMem(prioritization, 100000, "input/{}_{}/".format(prog, v))
                 apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
+                apfd_c = metric.apfd_c(prioritization, fault_matrix, timesMap)
                 realDetectionTime = metric.getUsedTimeParallel(batches, fault_matrix, "input/{}_{}/".format(prog, v))
                 apfds.append(apfd)
+                apfds_c.append(apfd_c)
                 stimes.append(stime)
                 ptimes.append(ptime)
                 print("  Progress: 100%  ")
@@ -172,7 +182,7 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
                     print "  APFD:", sum(apfds[run]) / len(apfds[run])
                 else:
                     print "  APFD:", apfd
-            rep = (name, stimes, ptimes, apfds, realDetectionTime)
+            rep = (name, stimes, ptimes, apfds, apfds_c, realDetectionTime)
             #writeOutput(outpath, ctype, rep, javaFlag)
             writeOutputWithTestTime(outpath, ctype, rep, javaFlag)
             print("")
@@ -451,14 +461,14 @@ def writeOutput(outpath, ctype, res, javaFlag):
 
 def writeOutputWithTestTime(outpath, ctype, res, javaFlag):
     if javaFlag:
-        name, stimes, ptimes, apfds, testTimes = res
+        name, stimes, ptimes, apfds, apfds_c, testTimes = res
         fileout = "{}/{}-{}.tsv".format(outpath, name, ctype)
         with open(fileout, "w") as fout:
-            fout.write("SignatureTime\tPrioritizationTime\tAPFD\tTimeToDetect\n")
-            for st, pt, apfdlist in zip(stimes, ptimes, apfds):
+            fout.write("SignatureTime\tPrioritizationTime\tAPFD\tAPFD_c\tTimeToDetect\n")
+            for st, pt, apfdlist, apfds_c_list in zip(stimes, ptimes, apfds, apfds_c):
                 for idx, apfd in enumerate(apfdlist):
                     time = testTimes[idx]
-                    tsvLine = "{}\t{}\t{}\t{}\n".format(st, pt, apfd, time)
+                    tsvLine = "{}\t{}\t{}\t{}\t{}\n".format(st, pt, apfd, apfds_c_list[idx], time)
                     fout.write(tsvLine)
     else:
         name, stimes, ptimes, apfds = res

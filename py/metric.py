@@ -75,6 +75,52 @@ def apfd(prioritization, fault_matrix, javaFlag):
 
         return apfd
 
+def apfd_c(prioritization, fault_matrix, timesMap):
+    """INPUT:
+    (list)prioritization: list of prioritization of test cases
+    (str)fault_matrix: path of fault_matrix (pickle file)
+
+    OUTPUT:
+    (float)APFD = 1 - (sum_{i=1}^{m} t_i / n*m) + (1 / 2n)
+    n = number of test cases
+    m = number of faults detected
+    t_i = position of first test case revealing fault i in the prioritization
+    Average Percentage of Faults Detected
+    """
+
+    # key=version, val=[faulty_tcs]
+    faults_dict = getFaultDetected(fault_matrix)
+    apfds_c = []
+    for i in faults_dict.keys():
+        faulty_tcs = set(faults_dict[i])
+        
+        TF_i = 1
+        m = 0.0
+
+        # Get cost of first test that detects fault 'i'
+        for tc_ID in prioritization:
+            if tc_ID in faulty_tcs:
+                m = 1.0
+                break
+            TF_i += 1
+        
+        n = len(prioritization)
+        numerator = 0.0
+        cost_TF = timesMap[TF_i] 
+        j=TF_i
+        while(j<n):
+            cost_j = timesMap[j]
+            numerator += cost_j - (0.5 * cost_TF)
+            j += 1
+        
+        total_time = sum(timesMap.values())
+        
+        apfd = (numerator)/(total_time*m) if m > 0 else 0.0
+        #apfd = 1.0 - (numerator / (n * m)) + (1.0 / (2 * n)) if m > 0 else 0.0
+        apfds_c.append(apfd)
+
+    return apfds_c
+
 def getUsedTime(prioritization, fault_matrix, times_path):
     faults_dict = getFaultDetected(fault_matrix)
     usedTimes = []
