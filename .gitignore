@@ -13,3 +13,4 @@ defects_folder/*Base/
 defects_folder/_savedResults/
 defects_folder/*_v0/
 *.log
+.ipynb_checkpoints/

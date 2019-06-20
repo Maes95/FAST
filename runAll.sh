@@ -15,4 +15,4 @@ do
     done
 done
 
-# python py/prioritize.py fullteachingexperimente2e_v0 bbox FAST-time 1 
+# python py/prioritize.py chart_v0 bbox FAST-time-mem 1 

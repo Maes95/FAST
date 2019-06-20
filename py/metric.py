@@ -75,7 +75,7 @@ def apfd(prioritization, fault_matrix, javaFlag):
 
         return apfd
 
-def apfd_c(prioritization, fault_matrix, timesMap):
+def apfd_c(prioritization, fault_matrix, timesMap, batches=None):
     """INPUT:
     (list)prioritization: list of prioritization of test cases
     (str)fault_matrix: path of fault_matrix (pickle file)
@@ -88,6 +88,16 @@ def apfd_c(prioritization, fault_matrix, timesMap):
     Average Percentage of Faults Detected
     """
 
+    cost_map = {}
+    if batches is not None:
+        for batch in batches:
+            if len(batch) is 0: continue
+            maxTime = max(list(map(lambda t: timesMap[t], batch))) 
+            for tc in batch:
+                cost_map[tc] = maxTime/len(batch)
+    else:
+        cost_map = timesMap  
+
     # key=version, val=[faulty_tcs]
     faults_dict = getFaultDetected(fault_matrix)
     apfds_c = []
@@ -97,26 +107,27 @@ def apfd_c(prioritization, fault_matrix, timesMap):
         TF_i = 1
         m = 0.0
 
-        # Get cost of first test that detects fault 'i'
+        # Get first test that detects fault 'i'
+        TF_i_pos = 0
         for tc_ID in prioritization:
             if tc_ID in faulty_tcs:
                 m = 1.0
                 break
             TF_i += 1
+            TF_i_pos += 1
         
         n = len(prioritization)
         numerator = 0.0
-        cost_TF = timesMap[TF_i] 
-        j=TF_i
+        j=TF_i_pos
         while(j<n):
-            cost_j = timesMap[j]
-            numerator += cost_j - (0.5 * cost_TF)
+            tc_j = prioritization[j]
+            numerator += cost_map[tc_j]
             j += 1
         
-        total_time = sum(timesMap.values())
+        total_time = sum(cost_map.values())
         
-        apfd = (numerator)/(total_time*m) if m > 0 else 0.0
-        #apfd = 1.0 - (numerator / (n * m)) + (1.0 / (2 * n)) if m > 0 else 0.0
+        apfd = (numerator- (0.5 * cost_map[TF_i] ))/(total_time*m) if m > 0 else 0.0
+
         apfds_c.append(apfd)
 
     return apfds_c
