@@ -43,7 +43,6 @@ NOTE:
   STR, I-TSD are BB prioritization only.
   ART-D, ART-F, GT, GA, GA-S are WB prioritization only."""
 
-
 def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
     javaFlag = True if v == "v0" else False
 
@@ -57,189 +56,50 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
 
     timesMap = priorTime.getTimesMap("input/{}_{}/".format(prog, v))
 
-    if name == "FAST-" + selsize.__name__[:-1]:
-        if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
-            ptimes, stimes, apfds, realDetectionTime, apfds_c = [], [], [], [], []
-            for run in xrange(repeats):
-                print " Run", run
-                if javaFlag:
-                    stime, ptime, prioritization = fast.fast_(
-                        fin, selsize, r=r, b=b, bbox=True, k=k, memory=False)
-                else:
-                    stime, ptime, prioritization = fast.fast_(
-                        fin, selsize, r=r, b=b, bbox=True, k=k, memory=True)
-                writePrioritization(ppath, name, ctype, run, prioritization)
-                apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
-                apfd_c = metric.apfd_c(prioritization, fault_matrix, timesMap)
-                realDetectionTime = metric.getUsedTime(prioritization, fault_matrix, "input/{}_{}/".format(prog, v))
-                apfds.append(apfd)
-                apfds_c.append(apfd_c)
-                stimes.append(stime)
-                ptimes.append(ptime)
-                print("  Progress: 100%  ")
-                print "  Running time:", stime + ptime
-                if javaFlag:
-                    print "  APFD:", sum(apfds[run]) / len(apfds[run])
-                else:
-                    print "  APFD:", apfd
-            rep = (name, stimes, ptimes, apfds, apfds_c, realDetectionTime)
-            #writeOutput(outpath, ctype, rep, javaFlag)
-            writeOutputWithTestTime(outpath, ctype, rep, javaFlag)
-            print("")
-        else:
-            print name, "already run."
-
-    elif name == "FAST-pw":
-        if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
-            ptimes, stimes, apfds, realDetectionTime, apfds_c = [], [], [], [], []
-            for run in xrange(repeats):
-                print " Run", run
-                if javaFlag:
-                    stime, ptime, prioritization = fast.fast_pw(
-                        fin, r, b, bbox=True, k=k, memory=False)
-                else:
-                    stime, ptime, prioritization = fast.fast_pw(
-                        fin, r, b, bbox=True, k=k, memory=True)
-                writePrioritization(ppath, name, ctype, run, prioritization)
-                apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
-                apfd_c = metric.apfd_c(prioritization, fault_matrix, timesMap)
-                realDetectionTime = metric.getUsedTime(prioritization, fault_matrix, "input/{}_{}/".format(prog, v))
-                apfds.append(apfd)
-                apfds_c.append(apfd_c)
-                stimes.append(stime)
-                ptimes.append(ptime)
-                print("  Progress: 100%  ")
-                print "  Running time:", stime + ptime
-                if javaFlag:
-                    print "  APFD:", sum(apfds[run]) / len(apfds[run])
-                else:
-                    print "  APFD:", apfd
-            rep = (name, stimes, ptimes, apfds, apfds_c, realDetectionTime)
-            #writeOutput(outpath, ctype, rep, javaFlag)
-            writeOutputWithTestTime(outpath, ctype, rep, javaFlag)
-            print("")
-        else:
-            print name, "already run."
-    
-    elif name == "FAST-time":
-        if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
-            ptimes, stimes, apfds, realDetectionTime, apfds_c = [], [], [], [], []
-            for run in xrange(repeats):
-                print " Run", run
-                if javaFlag:
-                    stime, ptime, prioritization = fast.fast_time(
-                        fin, r, b,  "input/{}_{}/".format(prog, v), bbox=True, k=k, memory=False)
-                else:
-                    stime, ptime, prioritization = fast.fast_time(
-                        fin, r, b,  "input/{}_{}/".format(prog, v), bbox=True, k=k, memory=True)
-                # NAIVE APROACH (change fast_time to fast_pw)
-                #extraPTime, prioritization = priorTime.priorByTime(prioritization, "input/{}_{}/".format(prog, v))
-                #ptime = extraPTime + ptime
-                writePrioritization(ppath, name, ctype, run, prioritization)
-                apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
-                apfd_c = metric.apfd_c(prioritization, fault_matrix, timesMap)
-                realDetectionTime = metric.getUsedTime(prioritization, fault_matrix, "input/{}_{}/".format(prog, v))
-                apfds.append(apfd)
-                apfds_c.append(apfd_c)
-                stimes.append(stime)
-                ptimes.append(ptime)
-                print("  Progress: 100%  ")
-                print "  Running time:", stime + ptime
-                if javaFlag:
-                    print "  APFD:", sum(apfds[run]) / len(apfds[run])
-                else:
-                    print "  APFD:", apfd
-            rep = (name, stimes, ptimes, apfds, apfds_c, realDetectionTime)
-            #writeOutput(outpath, ctype, rep, javaFlag)
-            writeOutputWithTestTime(outpath, ctype, rep, javaFlag)
-            print("")
-        else:
-            print name, "already run."
-    
-    elif name == "FAST-time-mem":
-        if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
-            ptimes, stimes, apfds, realDetectionTime, apfds_c = [], [], [], [], []
-            for run in xrange(repeats):
-                print " Run", run
-                if javaFlag:
-                    stime, ptime, prioritization = fast.fast_time(
-                        fin, r, b,  "input/{}_{}/".format(prog, v), bbox=True, k=k, memory=False)
-                else:
-                    stime, ptime, prioritization = fast.fast_time(
-                        fin, r, b,  "input/{}_{}/".format(prog, v), bbox=True, k=k, memory=True)
-                writePrioritization(ppath, name, ctype, run, prioritization)
-                batches = priorTime.getBatchesByMem(prioritization, 100000, "input/{}_{}/".format(prog, v))
-                apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
-                apfd_c = metric.apfd_c(prioritization, fault_matrix, timesMap, batches)
-                realDetectionTime = metric.getUsedTimeParallel(batches, fault_matrix, "input/{}_{}/".format(prog, v))
-                apfds.append(apfd)
-                apfds_c.append(apfd_c)
-                stimes.append(stime)
-                ptimes.append(ptime)
-                print("  Progress: 100%  ")
-                print "  Running time:", stime + ptime
-                if javaFlag:
-                    print "  APFD:", sum(apfds[run]) / len(apfds[run])
-                else:
-                    print "  APFD:", apfd
-            rep = (name, stimes, ptimes, apfds, apfds_c, realDetectionTime)
-            #writeOutput(outpath, ctype, rep, javaFlag)
-            writeOutputWithTestTime(outpath, ctype, rep, javaFlag)
-            print("")
-        else:
-            print name, "already run."
-
-    elif name == "STR":
-        if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
-            ptimes, stimes, apfds = [], [], []
-            for run in xrange(repeats):
-                print " Run", run
-                stime, ptime, prioritization = competitors.str_(fin)
-                writePrioritization(ppath, name, ctype, run, prioritization)
-                apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
-                apfds.append(apfd)
-                stimes.append(stime)
-                ptimes.append(ptime)
-                print("  Progress: 100%  ")
-                print "  Running time:", stime + ptime
-                if javaFlag:
-                    print "  APFD:", sum(apfds[run]) / len(apfds[run])
-                else:
-                    print "  APFD:", apfd
-            rep = (name, stimes, ptimes, apfds)
-            writeOutput(outpath, ctype, rep, javaFlag)
-            print("")
-        else:
-            print name, "already run."
-
-    elif name == "I-TSD":
-        if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
-            ptimes, stimes, apfds = [], [], []
-            for run in xrange(repeats):
-                print " Run", run
+    if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
+        ptimes, stimes, apfds, realDetectionTime, apfds_c = [], [], [], [], []
+        for run in xrange(repeats):
+            print " Run", run
+            # SELECT APROACH
+            memory = not javaFlag
+            if name == "FAST-" + selsize.__name__[:-1]:
+                stime, ptime, prioritization = fast.fast_(
+                        fin, selsize, r, b, bbox=True, k=k, memory=memory)
+            elif name == "FAST-pw":
+                stime, ptime, prioritization = fast.fast_pw(
+                        fin, r, b, bbox=True, k=k, memory=memory)
+            elif name == "FAST-time":
+                stime, ptime, prioritization = fast.fast_time(
+                        fin, r, b, "input/{}_{}/".format(prog, v), bbox=True, k=k, memory=memory)
+            elif name == "I-TSD":
                 stime, ptime, prioritization = competitors.i_tsd(fin)
-                writePrioritization(ppath, name, ctype, run, prioritization)
-                apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
-                apfds.append(apfd)
-                stimes.append(stime)
-                ptimes.append(ptime)
-                print("  Progress: 100%  ")
-                print "  Running time:", stime + ptime
-                if javaFlag:
-                    print "  APFD:", sum(apfds[run]) / len(apfds[run])
-                else:
-                    print "  APFD:", apfd
-            rep = (name, stimes, ptimes, apfds)
-            writeOutput(outpath, ctype, rep, javaFlag)
-            print("")
-        else:
-            print name, "already run."
+            elif name == "STR":
+                stime, ptime, prioritization = competitors.str_(fin)
+            else:
+                print("Wrong input.")
+                print(usage)
+                exit()
 
+            writePrioritization(ppath, name, ctype, run, prioritization)
+            apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
+            apfd_c = metric.apfd_c(prioritization, fault_matrix, timesMap)
+            realDetectionTime = metric.getUsedTime(prioritization, fault_matrix, "input/{}_{}/".format(prog, v))
+            apfds.append(apfd)
+            apfds_c.append(apfd_c)
+            stimes.append(stime)
+            ptimes.append(ptime)
+            print("  Progress: 100%  ")
+            print "  Running time:", stime + ptime
+            if javaFlag:
+                print "  APFD:", sum(apfds[run]) / len(apfds[run])
+            else:
+                print "  APFD:", apfd
+        rep = (name, stimes, ptimes, apfds, apfds_c, realDetectionTime)
+        #writeOutput(outpath, ctype, rep, javaFlag)
+        writeOutputWithTestTime(outpath, ctype, rep, javaFlag)
+        print("")
     else:
-        print("Wrong input.")
-        print(usage)
-        exit()
-
+        print name, "already run."
 
 def wboxPrioritization(name, prog, v, ctype, n, r, b, repeats, selsize):
     javaFlag = True if v == "v0" else False
@@ -382,7 +242,7 @@ def wboxPrioritization(name, prog, v, ctype, n, r, b, repeats, selsize):
             ptimes, stimes, apfds = [], [], []
             for run in xrange(repeats):
                 print " Run", run
-                stime, ptime, prioritization = competitors.art_d(fin)
+                stime, ptime, prioritization = competitors.artd(fin)
                 writePrioritization(ppath, name, ctype, run, prioritization)
                 apfd = metric.apfd(prioritization, fault_matrix, javaFlag)
                 apfds.append(apfd)
@@ -495,7 +355,7 @@ if __name__ == "__main__":
                 "ART-D", "ART-F", "GT", "GA", "GA-S", "FAST-time", "FAST-time-mem"}
     prog_vs = {"flex_v3", "grep_v3", "gzip_v1", "make_v1", "sed_v6",
                "closure_v0", "lang_v0", "math_v0", "chart_v0", "time_v0", 
-               "fullteaching_v0", "fullteachingint_v0","fullteachingall_v0", "fullteachingexperimente2e_v0"}
+               "fullteaching_v0", "fullteachingint_v0","fullteachingall_v0", "fullteachingexperimente2e_v0","kurento_v0"}
     entities = {"bbox", "function", "branch", "line"}
 
     if prog_v not in prog_vs:
