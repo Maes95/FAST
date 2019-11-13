@@ -90,25 +90,7 @@ def loadSignatures(input_file):
             tcID += 1
     return sig, time.clock() - start
 
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-
-# lsh + pairwise comparison with candidate set
-def fast_pw(input_file, r, b, bbox=False, k=5, memory=False):
-    """INPUT
-    (str)input_file: path of input file
-    (int)r: number of rows
-    (int)b: number of bands
-    (bool)bbox: True if BB prioritization
-    (int)k: k-shingle size (for BB prioritization)
-    (bool)memory: if True keep signature in memory and do not store them to file
-
-    OUTPUT
-    (list)P: prioritized test suite
-    """
-    n = r * b  # number of hash functions
-
+def generate_minhashes(input_file, bbox, memory, n, k):
     hashes = [lsh.hashFamily(i) for i in xrange(n)]
 
     if memory:
@@ -135,7 +117,26 @@ def fast_pw(input_file, r, b, bbox=False, k=5, memory=False):
                 mh_time = eval(fin.read().replace("\n", ""))
 
         ptime_start = time.clock()
-        tcs_minhashes, load_time = loadSignatures(sigfile)
+        tcs_minhashes, _ = loadSignatures(sigfile)
+    
+    return hashes, tcs_minhashes, mh_time, ptime_start
+
+# lsh + pairwise comparison with candidate set
+def fast_pw(input_file, r, b, bbox=False, k=5, memory=False):
+    """INPUT
+    (str)input_file: path of input file
+    (int)r: number of rows
+    (int)b: number of bands
+    (bool)bbox: True if BB prioritization
+    (int)k: k-shingle size (for BB prioritization)
+    (bool)memory: if True keep signature in memory and do not store them to file
+
+    OUTPUT
+    (list)P: prioritized test suite
+    """
+    n = r * b  # number of hash functions
+
+    hashes, tcs_minhashes, mh_time, ptime_start = generate_minhashes(input_file, bbox, memory, n, k)
 
     tcs = set(tcs_minhashes.keys())
 
@@ -202,6 +203,21 @@ def fast_pw(input_file, r, b, bbox=False, k=5, memory=False):
 
     return mh_time, ptime, prioritized_tcs[1:]
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+def time_fast(input_file, r, b, path, bbox=False, k=5, memory=False):
+    """INPUT
+    (str)input_file: path of input file
+    (int)r: number of rows
+    (int)b: number of bands
+    (bool)bbox: True if BB prioritization
+    (int)k: k-shingle size (for BB prioritization)
+    (bool)memory: if True keep signature in memory and do not store them to file
+
+    OUTPUT
+    (list)P: prioritized test suite
+    """
+    pass
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -218,37 +234,11 @@ def fast_time(input_file, r, b, path, bbox=False, k=5, memory=False):
     OUTPUT
     (list)P: prioritized test suite
     """
-    n = r * b  # number of hash functions
-
-    hashes = [lsh.hashFamily(i) for i in xrange(n)]
-
     times = priorTime.getTimesMap(path)
 
-    if memory:
-        test_suite = loadTestSuite(input_file, bbox=bbox, k=k)
-        # generate minhashes signatures
-        mh_t = time.clock()
-        tcs_minhashes = {tc[0]: lsh.tcMinhashing(tc, hashes)
-                         for tc in test_suite.items()}
-        mh_time = time.clock() - mh_t
-        ptime_start = time.clock()
+    n = r * b  # number of hash functions
 
-    else:
-        # loading input file and generating minhashes signatures
-        sigfile = input_file.replace(".txt", ".sig")
-        sigtimefile = "{}_sigtime.txt".format(input_file.split(".")[0])
-        if not os.path.exists(sigfile):
-            mh_t = time.clock()
-            storeSignatures(input_file, sigfile, hashes, bbox, k)
-            mh_time = time.clock() - mh_t
-            with open(sigtimefile, "w") as fout:
-                fout.write(repr(mh_time))
-        else:
-            with open(sigtimefile, "r") as fin:
-                mh_time = eval(fin.read().replace("\n", ""))
-
-        ptime_start = time.clock()
-        tcs_minhashes, load_time = loadSignatures(sigfile)
+    hashes, tcs_minhashes, mh_time, ptime_start = generate_minhashes(input_file, bbox, memory, n, k)
 
     tcs = set(tcs_minhashes.keys())
 
@@ -302,16 +292,6 @@ def fast_time(input_file, r, b, path, bbox=False, k=5, memory=False):
             if times[candidate] < times[selected_tc]:
                 selected_tc = candidate
 
-        # selected_tc, max_dist = random.choice(tuple(candidates)), -1
-        # print("RAND CANDIDATE: %d"% selected_tc)
-        # for candidate in tcs_minhashes:
-        #     if candidate in candidates: # ESTA LISTA PODRIA RESTRINGIRSE
-        #         dist = lsh.jDistanceEstimate(
-        #             selected_tcs_minhash, tcs_minhashes[candidate])
-        #         if dist > max_dist:
-        #             selected_tc, max_dist = candidate, dist
-        # print("SELECTED CANDIDATE: %d"% selected_tc)
-
         for i in xrange(n):
             if tcs_minhashes[selected_tc][i] < selected_tcs_minhash[i]:
                 selected_tcs_minhash[i] = tcs_minhashes[selected_tc][i]
@@ -343,33 +323,7 @@ def fast_(input_file, selsize, r, b, bbox=False, k=5, memory=False):
     """
     n = r * b  # number of hash functions
 
-    hashes = [lsh.hashFamily(i) for i in xrange(n)]
-
-    if memory:
-        test_suite = loadTestSuite(input_file, bbox=bbox, k=k)
-        # generate minhashes signatures
-        mh_t = time.clock()
-        tcs_minhashes = {tc[0]: lsh.tcMinhashing(tc, hashes)
-                         for tc in test_suite.items()}
-        mh_time = time.clock() - mh_t
-        ptime_start = time.clock()
-
-    else:
-        # loading input file and generating minhashes signatures
-        sigfile = input_file.replace(".txt", ".sig")
-        sigtimefile = "{}_sigtime.txt".format(input_file.split(".")[0])
-        if not os.path.exists(sigfile):
-            mh_t = time.clock()
-            storeSignatures(input_file, sigfile, hashes, bbox, k)
-            mh_time = time.clock() - mh_t
-            with open(sigtimefile, "w") as fout:
-                fout.write(repr(mh_time))
-        else:
-            with open(sigtimefile, "r") as fin:
-                mh_time = eval(fin.read().replace("\n", ""))
-
-        ptime_start = time.clock()
-        tcs_minhashes, load_time = loadSignatures(sigfile)
+    hashes, tcs_minhashes, mh_time, ptime_start = generate_minhashes(input_file, bbox, memory, n, k)
 
     tcs = set(tcs_minhashes.keys())
 
