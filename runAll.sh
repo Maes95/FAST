@@ -1,11 +1,11 @@
 projects=('kurento_v0')
 #algorithms=('FAST-one' 'FAST-pw' 'FAST-time' 'STR' 'I-TSD')
-algorithms=('FAST-pw')
+algorithms=('TIME-FAST' 'FAST-one' 'FAST-pw' 'FAST-time')
 
 #projects=('chart_v0' 'closure_v0'  'lang_v0'  'time_v0' 'math_v0' )
 #algorithms=('FAST-one' 'FAST-pw' 'FAST-time' 'FAST-time-mem')
 
-it=1
+it=100
 
 for proj in "${projects[@]}"
 do
