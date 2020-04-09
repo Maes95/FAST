@@ -8,4 +8,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 CMD [ "python", "py/prioritize.py" ]
 
 # BUILD docker build -t fast-env .
-# RUN docker run -it -v $PWD:/usr/src/app fast-env
+# RUN docker run -it -v $PWD:/usr/src/app fast-env bash

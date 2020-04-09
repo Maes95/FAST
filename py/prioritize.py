@@ -28,6 +28,8 @@ import metric
 import priorTime
 import pprint
 
+from pareto import get_pareto_frontier_and_plot
+
 
 usage = """USAGE: python py/prioritize.py <dataset> <entity> <algorithm> <repetitions>
 OPTIONS:
@@ -111,12 +113,17 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
 
         # Only for multi-objetive
         if name == "FAST-time":
+            # Save all solutions
+            solutions = []
             outpath = "output/{}_{}/".format(prog, v)
             fileout = "{}/{}-{}.tsv".format(outpath, name, 'obj-func')
             with open(fileout, "w") as fout:
                 fout.write("Index\tDissimilarity\tTime\tAPDFc\n")
                 for idx, (dissimilarity_value, time_value, apfd_c) in enumerate(objective_function_values):
                     fout.write("{}\t{}\t{}\t{}\n".format(idx, dissimilarity_value, time_value, sum(apfd_c)))
+                    solutions.append([idx, dissimilarity_value, time_value, sum(apfd_c)])
+            # Generate and save pareto frontier and graphic
+            get_pareto_frontier_and_plot(solutions, "{}_{}".format(prog, v), name)
 
 
 
