@@ -56,6 +56,8 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
 
     timesMap = priorTime.getTimesMap("input/{}_{}/".format(prog, v))
 
+    objective_function_values = []
+
     if ("{}-{}.tsv".format(name, ctype)) not in set(os.listdir(outpath)):
         ptimes, stimes, apfds, realDetectionTime, apfds_c = [], [], [], [], []
         for run in xrange(repeats):
@@ -69,7 +71,7 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
                 stime, ptime, prioritization = fast.fast_pw(
                         fin, r, b, bbox=True, k=k, memory=memory)
             elif name == "FAST-time":
-                stime, ptime, prioritization = fast.fast_time(
+                stime, ptime, prioritization, dissimilarity_value, time_value = fast.fast_time(
                         fin, r, b, "input/{}_{}/".format(prog, v), bbox=True, k=k, memory=memory)
             elif name == "TIME-FAST":
                 stime, ptime, prioritization = fast.time_fast(
@@ -97,10 +99,27 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
                 print "  APFD:", sum(apfds[run]) / len(apfds[run])
             else:
                 print "  APFD:", apfd
+
+            # Only for multi-objetive
+            if name == "FAST-time":
+                objective_function_values.append((dissimilarity_value, time_value, apfd_c))
+
         rep = (name, stimes, ptimes, apfds, apfds_c, realDetectionTime)
         #writeOutput(outpath, ctype, rep, javaFlag)
         writeOutputWithTestTime(outpath, ctype, rep, javaFlag)
         print("")
+
+        # Only for multi-objetive
+        if name == "FAST-time":
+            outpath = "output/{}_{}/".format(prog, v)
+            fileout = "{}/{}-{}.tsv".format(outpath, name, 'obj-func')
+            with open(fileout, "w") as fout:
+                fout.write("Index\tDissimilarity\tTime\tAPDFc\n")
+                for idx, (dissimilarity_value, time_value, apfd_c) in enumerate(objective_function_values):
+                    fout.write("{}\t{}\t{}\t{}\n".format(idx, dissimilarity_value, time_value, sum(apfd_c)))
+
+
+
     else:
         print name, "already run."
 

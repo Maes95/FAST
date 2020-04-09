@@ -16,4 +16,4 @@ do
     done
 done
 
-# python py/prioritize.py chart_v0 bbox FAST-time-mem 1 
+# python py/prioritize.py chart_v0 bbox FAST-time 1 

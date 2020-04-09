@@ -122,6 +122,45 @@ def generate_minhashes(input_file, bbox, memory, n, k):
     
     return hashes, tcs_minhashes, mh_time, ptime_start
 
+def dissimilarity_obj_fun(prioritized_tcs, tcs_minhashes):
+
+    # Get first TC
+    checked_tcs = [prioritized_tcs.pop()]
+
+    total_dist = 0
+
+    while len(prioritized_tcs) > 0:
+        
+        # Get next TC
+        current_tc = prioritized_tcs.pop()
+
+        # Get average distance from others TCs
+        acc_dist = 0
+        for tc in checked_tcs:
+            acc_dist += lsh.jDistanceEstimate(
+                        tcs_minhashes[current_tc], tcs_minhashes[tc])
+        
+        total_dist += acc_dist / len(checked_tcs)
+        
+        # Add to checked TCs to compare with the next
+        checked_tcs.append(current_tc)
+    
+    # Return average distance
+
+    return total_dist / len(checked_tcs)
+
+def time_obj_fun(prioritized_tcs, times):
+
+    median = len(prioritized_tcs) / 2
+
+    total_time_at_median = 0
+
+    for i in xrange(median):
+        total_time_at_median += times[prioritized_tcs[i]]
+    
+    return total_time_at_median
+
+
 def fast(input_file, r, b, sel_fun, times=None, bbox=False, k=5, memory=False, sub_set=[]):
     """INPUT
     (str)input_file: path of input file
@@ -137,6 +176,8 @@ def fast(input_file, r, b, sel_fun, times=None, bbox=False, k=5, memory=False, s
     n = r * b  # number of hash functions
 
     hashes, tcs_minhashes, mh_time, ptime_start = generate_minhashes(input_file, bbox, memory, n, k)
+
+    tcs_minhashes_original = tcs_minhashes.copy()
 
     if len(sub_set)>0:
         # ALLOW US TO APPLY FAST ONLY IN A SUBSET OF TCS
@@ -191,7 +232,10 @@ def fast(input_file, r, b, sel_fun, times=None, bbox=False, k=5, memory=False, s
 
     ptime = time.clock() - ptime_start
 
-    return mh_time, ptime, prioritized_tcs[1:]
+    # Calculate dissimilarity of prioritization
+    dissimilarity = dissimilarity_obj_fun(prioritized_tcs[1:], tcs_minhashes_original)
+
+    return mh_time, ptime, prioritized_tcs[1:], dissimilarity
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -229,7 +273,7 @@ def fast_pw(input_file, r, b, bbox=False, k=5, memory=False):
     # ▲ DEFINE SELECTION FUNCTION ▲
 
     
-    mh_time, ptime, prioritized_tcs = fast(input_file, r, b, pw_fn, times=None, bbox=False, k=5, memory=False)
+    mh_time, ptime, prioritized_tcs, _ = fast(input_file, r, b, pw_fn, times=None, bbox=False, k=5, memory=False)
     return mh_time, ptime, prioritized_tcs
 
 
@@ -314,28 +358,6 @@ def time_fast(input_file, r, b, path, bbox=False, k=5, memory=False, num_cluster
         del tcs_minhashes[selected_tc]
     # ▲ DEFINE SELECTION FUNCTION ▲
 
-    # EXPERIMENT
-
-    # subset = times.items()
-    # random.shuffle(subset)
-    # subset = subset
-
-    # for i in xrange(5):
-    #     print("IT %d"%i)
-    #     for j in [2,3,4,5]:
-
-    #         groups = cluster2(subset, j)
-
-    #         prioritization = []
-
-    #         for g in groups:
-    #             g_subset = [x[0] for x in g]
-    #             _, _, sub_prioritization = fast(input_file, r, b, pw_fn, times=times, bbox=False, k=5, memory=False, sub_set=g_subset)
-    #             prioritization = prioritization + sub_prioritization
-
-    #         apfd_c = metric.apfd_c(prioritization, fault_matrix, times)
-    #         print("J=%d => APFD_c=%f"%(j, sum(apfd_c) / len(apfd_c)))
-
     groups = cluster2(times.items(), num_clusters)
     prioritization = []
     mh_times = []
@@ -385,8 +407,14 @@ def fast_time(input_file, r, b, path, bbox=False, k=5, memory=False):
         del tcs_minhashes[selected_tc]
     # ▲ DEFINE SELECTION FUNCTION ▲
         
-    mh_time, ptime, prioritized_tcs = fast(input_file, r, b, time_fn, times=times, bbox=False, k=5, memory=False)
-    return mh_time, ptime, prioritized_tcs
+    mh_time, ptime, prioritized_tcs, dissimilarity_value = fast(input_file, r, b, time_fn, times=times, bbox=False, k=5, memory=False)
+
+    time_value = time_obj_fun(prioritized_tcs, times)
+
+    # print("  Dissimilarity: #%f#"%dissimilarity_value)
+    # print("  Time         : #%f#"%time_value)
+
+    return mh_time, ptime, prioritized_tcs, dissimilarity_value, time_value
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -420,5 +448,5 @@ def fast_(input_file, selsize, r, b, bbox=False, k=5, memory=False):
             del tcs_minhashes[selected_tc]
     # ▲ DEFINE SELECTION FUNCTION ▲
 
-    mh_time, ptime, prioritized_tcs = fast(input_file, r, b, sel_fn, times=None, bbox=False, k=5, memory=False)
+    mh_time, ptime, prioritized_tcs, _ = fast(input_file, r, b, sel_fn, times=None, bbox=False, k=5, memory=False)
     return mh_time, ptime, prioritized_tcs
