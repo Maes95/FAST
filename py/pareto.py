@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib
+import sys
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
@@ -30,11 +31,12 @@ def get_pareto_frontier_and_plot(data, project, alg):
     plt.xlabel('Dissimilarity')
     plt.ylabel('Time (sec)')
     #plt.show()
-    plt.savefig('output/%s/%s-obj-func.png'%(project, alg))
+    plt.savefig('output/%s/%s/%s-obj-func.png' % (project, alg, alg))
 
     # Save data
     pareto_front_df = pareto_front_df.rename(columns={0: "SolutionIndex", 1:"Dissimilarity", 2:"Time", 3:"APFD_c"})
-    pareto_front_df.to_csv('output/%s/%s-pareto-frontier.csv'%(project, alg),index=False)
+    pareto_front_df.to_csv(
+        'output/%s/%s/%s-pareto-frontier.csv' % (project, alg, alg), index=False)
 
 def identify_pareto(scores):
     # Count number of items
@@ -65,12 +67,15 @@ def identify_pareto(scores):
     # Return ids of scenarios on pareto front
     return population_ids[pareto_front]
 
-if __name__ == "__main__":
-    # JUST FOR CHECK IT WORKS
-    data = []
-    with open("output/kurento_v0/FAST-time-obj-func.tsv") as fd:
-        tsvreader = csv.reader(fd, delimiter="\t")
-        for i, line in enumerate(tsvreader):
-            if i is 0: continue
-            data.append([ int(line[0]), float(line[1]), float(line[2]),  float(line[3]) ])
-    get_pareto_frontier_and_plot(data, "kurento_v0", "FAST-time")
+# if __name__ == "__main__":
+
+#     project = sys.argv[1]
+
+#     # JUST FOR CHECK IT WORKS
+#     data = []
+#     with open("output/"+project+"/FAST-time-obj-func.tsv") as fd:
+#         tsvreader = csv.reader(fd, delimiter="\t")
+#         for i, line in enumerate(tsvreader):
+#             if i is 0: continue
+#             data.append([ int(line[0]), float(line[1]), float(line[2]),  float(line[3]) ])
+#     get_pareto_frontier_and_plot(data, project, "FAST-time")

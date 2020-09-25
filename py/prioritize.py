@@ -45,6 +45,9 @@ NOTE:
   STR, I-TSD are BB prioritization only.
   ART-D, ART-F, GT, GA, GA-S are WB prioritization only."""
 
+# output/<program>_<type>/<alg>/
+OUTPUT_FOLDER = "output/{}_{}/{}/"
+
 def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
     javaFlag = True if v == "v0" else False
 
@@ -53,7 +56,7 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
         fault_matrix = "input/{}_{}/fault_matrix.pickle".format(prog, v)
     else:
         fault_matrix = "input/{}_{}/fault_matrix_key_tc.pickle".format(prog, v)
-    outpath = "output/{}_{}/".format(prog, v)
+    outpath = OUTPUT_FOLDER.format(prog, v, name)
     ppath = outpath + "prioritized/"
 
     timesMap = priorTime.getTimesMap("input/{}_{}/".format(prog, v))
@@ -115,13 +118,15 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
         if name == "FAST-time":
             # Save all solutions
             solutions = []
-            outpath = "output/{}_{}/".format(prog, v)
+            outpath = OUTPUT_FOLDER.format(prog, v, name)
             fileout = "{}/{}-{}.tsv".format(outpath, name, 'obj-func')
             with open(fileout, "w") as fout:
                 fout.write("Index\tDissimilarity\tTime\tAPDFc\n")
                 for idx, (dissimilarity_value, time_value, apfd_c) in enumerate(objective_function_values):
-                    fout.write("{}\t{}\t{}\t{}\n".format(idx, dissimilarity_value, time_value, sum(apfd_c)))
-                    solutions.append([idx, dissimilarity_value, time_value, sum(apfd_c)])
+                    fout.write("{}\t{}\t{}\t{}\n".format(
+                        idx, dissimilarity_value, time_value,  sum(apfd_c)/len(apfd_c)))
+                    solutions.append(
+                        [idx, dissimilarity_value, time_value,  sum(apfd_c)/len(apfd_c)])
             # Generate and save pareto frontier and graphic
             get_pareto_frontier_and_plot(solutions, "{}_{}".format(prog, v), name)
 
@@ -139,7 +144,7 @@ def wboxPrioritization(name, prog, v, ctype, n, r, b, repeats, selsize):
     else:
         fault_matrix = "input/{}_{}/fault_matrix_key_tc.pickle".format(prog, v)
 
-    outpath = "output/{}_{}/".format(prog, v)
+    outpath = OUTPUT_FOLDER .format(prog, v, name)
     ppath = outpath + "prioritized/"
 
     if name == "GT":
@@ -406,7 +411,7 @@ if __name__ == "__main__":
 
     prog, v = prog_v.split("_")
 
-    directory = "output/{}_{}/".format(prog, v)
+    directory = OUTPUT_FOLDER .format(prog, v, algname)
     if not os.path.exists(directory):
         os.makedirs(directory)
     directory += "prioritized/"
