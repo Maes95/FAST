@@ -13,7 +13,7 @@ for project in os.listdir('output/'):
 
     for algoritm in os.listdir('output/%s/' % project):
         
-        with open('output/%s/%s/%s-bbox.tsv' % (project, algoritm, algoritm), 'r+') as fd:
+        with open('output/%s/%s/%s-results.tsv' % (project, algoritm, algoritm), 'r+') as fd:
             
             read_tsv = csv.reader(fd, delimiter="\t")
             
@@ -21,9 +21,15 @@ for project in os.listdir('output/'):
 
             for row in read_tsv:
 
-                if row[3] == 'APFD_c': continue # Skip header
+                if row[0] == 'Index': continue # Skip header
 
-                APFD_c = float(row[3])
+                print(algoritm)
+
+                if algoritm == 'FAST-time':
+                    APFD_c = float(row[3])
+                else:
+                    APFD_c = float(row[1])
+
                 if APFD_c > max_value:
                     max_value = APFD_c
 
@@ -49,6 +55,6 @@ for project in os.listdir('output/'):
 for project, algorithms in project_map.items():
     print(project)
     for alg, value in algorithms.items():
-        print("--> [%s]:%f"%(alg, value))
+        print("-> [%s]:%f"%(alg, value))
 
 

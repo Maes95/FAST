@@ -114,24 +114,28 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
         writeOutputWithTestTime(outpath, ctype, rep, javaFlag)
         print("")
 
-        # Only for multi-objetive
-        if name == "FAST-time":
-            # Save all solutions
-            solutions = []
-            outpath = OUTPUT_FOLDER.format(prog, v, name)
-            fileout = "{}/{}-{}.tsv".format(outpath, name, 'obj-func')
-            with open(fileout, "w") as fout:
-                fout.write("Index\tDissimilarity\tTime\tAPDFc\n")
+        # Save all solutions
+        outpath = OUTPUT_FOLDER.format(prog, v, name)
+        fileout = "{}/{}-{}.tsv".format(outpath, name, 'results')
+        with open(fileout, "w") as fout:
+
+            # Only for multi-objetive
+            if name == "FAST-time":
+                solutions = []
+                fout.write("Index\tDissimilarity\tTime\tAPFD_c\n")
                 for idx, (dissimilarity_value, time_value, apfd_c) in enumerate(objective_function_values):
                     fout.write("{}\t{}\t{}\t{}\n".format(
                         idx, dissimilarity_value, time_value,  sum(apfd_c)/len(apfd_c)))
                     solutions.append(
                         [idx, dissimilarity_value, time_value,  sum(apfd_c)/len(apfd_c)])
-            # Generate and save pareto frontier and graphic
-            get_pareto_frontier_and_plot(solutions, "{}_{}".format(prog, v), name)
-
-
-
+                # Generate and save pareto frontier and graphic
+                get_pareto_frontier_and_plot(solutions, "{}_{}".format(prog, v), name)
+            
+            # Others algorithms
+            else: 
+                fout.write("Index\tAPFD_c\n")
+                for idx, apfd_c in enumerate(apfds_c):
+                    fout.write("{}\t{}\n".format( idx, sum(apfd_c)/len(apfd_c)))
     else:
         print name, "already run."
 
