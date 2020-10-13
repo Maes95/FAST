@@ -23,8 +23,6 @@ for project in os.listdir('output/'):
 
                 if row[0] == 'Index': continue # Skip header
 
-                print(algoritm)
-
                 if algoritm == 'FAST-time':
                     APFD_c = float(row[3])
                 else:

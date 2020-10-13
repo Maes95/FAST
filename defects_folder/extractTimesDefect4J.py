@@ -1,5 +1,4 @@
 import subprocess
-import tkFileDialog
 import os
 from os import listdir
 from os.path import isfile, join, isdir
@@ -11,6 +10,20 @@ import cPickle as pickle
 import shutil
 from operator import attrgetter
 import json
+
+class Defects4J:
+
+    def __init__(self, pm):
+        self.pm = pm
+
+    def allProjects(self):
+        pass
+
+    def getNumberOfBugs(self, project_name):
+        return int(self.pm.runAndGetOutput("defects4j info -p %s | grep 'Number of bugs:' | cut -d':' -f2" % project_name))
+
+    def getTestCaseJavaClasses(self, project_name, bug_id):
+        return self.pm.runAndGetOutput("defects4j info -p %s -b %d | grep -oP \" \- \K(.+)::\" | cut -d\":\" -f1" % (project_name, bug_id))
 
 class ProcessManager:
 
@@ -45,7 +58,7 @@ class ExtractorManager:
         if os.path.exists(self.folder_name):
             shutil.rmtree(self.folder_name)
         os.mkdir(self.folder_name)
-        
+
         self.bbox = ""
         self.times= ""
         self.times_avg= ""
@@ -55,12 +68,13 @@ class ExtractorManager:
         self.tcs = dict()
         self.n=1
         self.pm = ProcessManager(open(join(self.folder_name, 'outputs.log'), 'w+'))
-        self.project['n_bugs'] = int(self.pm.runAndGetOutput("defects4j info -p %s | grep 'Number of bugs:' | cut -d':' -f2" % project['name']))
+        self.d4j = Defects4J(self.pm)
+        self.project['n_bugs'] = self.d4j.getNumberOfBugs(project['name'])
     
     def create_and_test(self, folder, change_version_command):
-        print "> Getting version %s" % folder
+        print("> Getting version %s" % folder)
         if os.path.exists( folder ):
-            print "> Project available: %s" % folder
+            print("> Project available: %s" % folder)
             os.chdir(os.getcwd()+"/"+folder)
         else:
             self.pm.call(change_version_command)
@@ -78,48 +92,48 @@ class ExtractorManager:
 
         print "\033[95mProject: %s \033[0m" % self.project['name']
 
-        self.create_and_test(self.project['base_folder'], self.project['base'])
+        #self.create_and_test(self.project['base_folder'], self.project['base'])
 
-        reports = listdir(self.project['reports_path'])
-        reports.sort()
+        # reports = listdir(self.project['reports_path'])
+        # reports.sort()
 
-        for report in reports:
-            if report.endswith('.xml'):
-                root = xml.etree.ElementTree.parse(join(self.project['reports_path'],report)).getroot()
-                suit_name = root.get('name')
+        # for report in reports:
+        #     if report.endswith('.xml'):
+        #         root = xml.etree.ElementTree.parse(join(self.project['reports_path'],report)).getroot()
+        #         suit_name = root.get('name')
 
-                # FILTER
-                excluded = False
-                if 'exclude' in self.project:
-                    for ex in self.project['exclude']:
-                        m = re.search(ex, suit_name)
-                        if m is not None and m.group(0):
-                            excluded = True
-                if excluded: continue 
+        #         # FILTER
+        #         excluded = False
+        #         if 'exclude' in self.project:
+        #             for ex in self.project['exclude']:
+        #                 m = re.search(ex, suit_name)
+        #                 if m is not None and m.group(0):
+        #                     excluded = True
+        #         if excluded: continue 
                 
-                try:
-                    # ADD BBOX
-                    with open(join(self.project['test_path'], suit_name.replace('.','/')+".java"), "r+") as code_file:  
-                        self.bbox += code_file.read().replace("\n"," ").replace("\r"," ") +'\n'
-                     # ADD TIME
-                    self.times += root.get('time')+'\n'
-                    # SAVE TO GET FAULT MATRIX
-                    self.tcs[suit_name] = {
-                        'id': self.n,
-                        'name': suit_name
-                    }
-                    self.n = self.n+1
-                except IOError as err:
-                    # Except when exist a class in another class, i.e. SpecializeModuleTest$SpecializeModuleSpecializationStateTest.java
-                    print "> Can't include %s TC" % suit_name
-                    continue
+        #         try:
+        #             # ADD BBOX
+        #             with open(join(self.project['test_path'], suit_name.replace('.','/')+".java"), "r+") as code_file:  
+        #                 self.bbox += code_file.read().replace("\n"," ").replace("\r"," ") +'\n'
+        #              # ADD TIME
+        #             self.times += root.get('time')+'\n'
+        #             # SAVE TO GET FAULT MATRIX
+        #             self.tcs[suit_name] = {
+        #                 'id': self.n,
+        #                 'name': suit_name
+        #             }
+        #             self.n = self.n+1
+        #         except IOError as err:
+        #             # Except when exist a class in another class, i.e. SpecializeModuleTest$SpecializeModuleSpecializationStateTest.java
+        #             print "> Can't include %s TC" % suit_name
+        #             continue
 
         #os.chdir(self.init_folder)
     
     def getFaultMatrix(self):
         for n in xrange(self.project['n_bugs']):
             bug_id = n+1 # FIRST BUG 1, NOT 0
-            tc_classes = self.pm.runAndGetOutput("defects4j info -p %s -b %d | grep -oP \" \- \K(.+)::\" | cut -d\":\" -f1" % (self.project['name'], bug_id) )
+            tc_classes = self.d4j.getTestCaseJavaClasses(self.project['name'], bug_id)
 
             for tc_class in [ x for x in tc_classes.split('\n') if len(x) > 1]:
                 tc_class = self.fix(tc_class.strip())
@@ -164,6 +178,8 @@ class ExtractorManager:
     def fix(self, tc_class):
         if(self.project['name'] == "Math"):
             return tc_class.replace("math.","math3.")
+        if(self.project['name'] == "Lang"):
+            return tc_class.replace("lang.", "lang3.")
         else:
             return tc_class
 
@@ -185,9 +201,11 @@ class ExtractorManager:
 if __name__ == "__main__":
 
     if len(sys.argv) != 2:
-        print("Use: python extractTimesDefect4J.py <config_file>")
+        print("Use: python extractTimesDefect4J.py <defects4j_project>")
         exit()
-    config = json.load(open(sys.argv[1]))
+
+    config_path = "/home/fast/defects_folder/_configFiles/%s.json" % (sys.argv[1])
+    config = json.load(open(config_path))
 
     em = ExtractorManager(config)
     em.runTestForMapClasses()
