@@ -10,5 +10,6 @@ output/*_v0/*
 
 # IGNORE DEFECTS FOLDERS
 defects_folder/projects/**/
+defects_folder/output/**/
 *.log
 .ipynb_checkpoints/
