@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 
 import csv
 
-def get_pareto_frontier_and_plot(data, project, alg):
+
+def get_pareto_frontier_and_plot(data, outpath):
     scores = np.array(data)
     pareto_front = []
     points       = []
@@ -31,12 +32,12 @@ def get_pareto_frontier_and_plot(data, project, alg):
     plt.xlabel('Dissimilarity')
     plt.ylabel('Time (sec)')
     #plt.show()
-    plt.savefig('output/%s/%s/%s-obj-func.png' % (project, alg, alg))
+    plt.savefig(outpath+'obj-func.png')
 
     # Save data
     pareto_front_df = pareto_front_df.rename(columns={0: "SolutionIndex", 1:"Dissimilarity", 2:"Time", 3:"APFD_c"})
     pareto_front_df.to_csv(
-        'output/%s/%s/%s-pareto-frontier.csv' % (project, alg, alg), index=False)
+        outpath+'pareto-frontier.csv', index=False)
 
 def identify_pareto(scores):
     # Count number of items

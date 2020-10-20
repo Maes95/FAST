@@ -87,11 +87,12 @@ class Defects4JFAST:
                 report_index = 1
                 for suit_name, time in self._getSurefireReportsData():
                     try:
+                        bbox = ""
                         # Need to ensure that test file exist (class in class is posible)
                         with open(os.path.join(self.test_path, suit_name.replace('.', '/')+".java"), "r+") as code_file:
                             # ADD BBOX (ONLY IN FIRST ITERATION)
                             if it == 0:
-                                self.bbox += code_file.read().replace("\n", " ").replace("\r", " ") + '\n'
+                                bbox += code_file.read().replace("\n", " ").replace("\r", " ") + '\n'
                         
                         suit_name_class = suit_name.split('.')[-1]
 
@@ -103,7 +104,8 @@ class Defects4JFAST:
                             self.tcs[suit_name_class] = {
                                 'id': report_index,
                                 'name': suit_name,
-                                'times': [float(time)]
+                                'times': [float(time)],
+                                'bbox': bbox
                             }
                             report_index += 1
                         
@@ -119,6 +121,7 @@ class Defects4JFAST:
             for tc in tcs_list:
                 avg_time = str(sum(tc['times']) / len(tc['times']))
                 self.times += avg_time+'\n'
+                self.bbox += tc['bbox']
 
     def getTestCaseJavaClasses(self, bug_id):
         # defects4j info -p Lang -b 1 | grep -oP " \- \K(.+)::" | cut -d":" -f1

@@ -46,7 +46,7 @@ NOTE:
   ART-D, ART-F, GT, GA, GA-S are WB prioritization only."""
 
 # output/<program>_<type>/<alg>/
-OUTPUT_FOLDER = "output/{}_{}/{}/"
+OUTPUT_FOLDER = "output/{}_{}/{}/{}_iterations/"
 
 def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
     javaFlag = True if v == "v0" else False
@@ -56,7 +56,7 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
         fault_matrix = "input/{}_{}/fault_matrix.pickle".format(prog, v)
     else:
         fault_matrix = "input/{}_{}/fault_matrix_key_tc.pickle".format(prog, v)
-    outpath = OUTPUT_FOLDER.format(prog, v, name)
+    outpath = OUTPUT_FOLDER.format(prog, v, name, repeats)
     ppath = outpath + "prioritized/"
 
     timesMap = priorTime.getTimesMap("input/{}_{}/".format(prog, v))
@@ -115,7 +115,7 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
         print("")
 
         # Save all solutions
-        outpath = OUTPUT_FOLDER.format(prog, v, name)
+        outpath = OUTPUT_FOLDER.format(prog, v, name, repeats)
         fileout = "{}/{}-{}.tsv".format(outpath, name, 'results')
         with open(fileout, "w") as fout:
 
@@ -129,7 +129,7 @@ def bboxPrioritization(name, prog, v, ctype, k, n, r, b, repeats, selsize):
                     solutions.append(
                         [idx, dissimilarity_value, time_value,  sum(apfd_c)/len(apfd_c)])
                 # Generate and save pareto frontier and graphic
-                get_pareto_frontier_and_plot(solutions, "{}_{}".format(prog, v), name)
+                get_pareto_frontier_and_plot(solutions, outpath)
             
             # Others algorithms
             else: 
@@ -148,7 +148,7 @@ def wboxPrioritization(name, prog, v, ctype, n, r, b, repeats, selsize):
     else:
         fault_matrix = "input/{}_{}/fault_matrix_key_tc.pickle".format(prog, v)
 
-    outpath = OUTPUT_FOLDER .format(prog, v, name)
+    outpath = OUTPUT_FOLDER .format(prog, v, name, repeats)
     ppath = outpath + "prioritized/"
 
     if name == "GT":
@@ -392,8 +392,7 @@ if __name__ == "__main__":
                 "STR", "I-TSD",
                 "ART-D", "ART-F", "GT", "GA", "GA-S", "FAST-time", "FAST-time-mem", "TIME-FAST"}
     prog_vs = {"flex_v3", "grep_v3", "gzip_v1", "make_v1", "sed_v6",
-               "closure_v0", "lang_v0", "math_v0", "chart_v0", "time_v0", 
-               "fullteaching_v0", "fullteachingint_v0","fullteachingall_v0", "fullteachingexperimente2e_v0","kurento_v0"}
+               "closure_v0", "lang_v0", "math_v0", "chart_v0", "time_v0", "jsoup_v0", "csv_v0", "kurento_v0", "databind_v0", "jxpath_v0", "mockito_v0"}
     entities = {"bbox", "function", "branch", "line"}
 
     if prog_v not in prog_vs:
@@ -415,7 +414,7 @@ if __name__ == "__main__":
 
     prog, v = prog_v.split("_")
 
-    directory = OUTPUT_FOLDER .format(prog, v, algname)
+    directory = OUTPUT_FOLDER .format(prog, v, algname, repeats)
     if not os.path.exists(directory):
         os.makedirs(directory)
     directory += "prioritized/"
