@@ -1,5 +1,5 @@
 #algorithms=('FAST-one' 'FAST-pw' 'FAST-time' 'STR' 'I-TSD')
-algorithms=('FAST-time')
+algorithms=('FAST-pw')
 #projects=('kurento_v0' 'chart_v0' 'closure_v0'  'lang_v0'  'time_v0' 'math_v0' )
 projects=('kurento_v0' 'chart_v0' 'closure_v0'  'lang_v0'  'time_v0' 'math_v0' 'mockito_v0' 'csv_v0' 'databind_v0' 'jsoup_v0' 'jxpath_v0' )
 #algorithms=('FAST-one' 'FAST-pw' 'FAST-time' 'FAST-time-mem')
